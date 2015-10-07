@@ -1,0 +1,203 @@
+= Práctica #4: Resolviendo problemas con Java Streams
+:author: Diego Galíndez Barreda (A01370815), Eduardo Watzuri Gaytán Martinez (A01165988)
+:lang: es
+:email: dgalindez1@gmail.com, A01165988@itesm.mx 
+:encoding: utf-8
+:revdate: 19 de agosto, 2015.
+:source-highlighter: coderay
+:numbered:
+
+Este reporte fue elaborado para el curso de _Programación multinúcleo_ del Tecnológico de Monterrey, Campus Estado de México.  
+
+:numbered:
+
+== Introducción
+Durante la práctica se utilizan Streams de Java para solucionar problemas.
+Se hace una aproximación al valor de PI con el método de Montecarlo y se hace un
+Counting Sort, ambos de forma secuencial y con streams de java para hacerlos en
+paralelo.
+
+[NOTE]
+.Hardware y software utilizado
+=============================
+Los programas se probaron en una laptop con las siguientes características:
+
+- Procesador Intel Core i5-4200U de 1.60GHz con dos núcleos y cuatro hyperthreads.
+- 5.7 GiB de memoria RAM.
+- Sistema operativo Ubuntu 14.04, kernel de Linux 3.19.0-25 de 64 bits.
+- Compilador Java 1.8.0_51 de Oracle.
+=============================
+
+== Solución secuencial Montecarlo
+A continuación se anexa el codigo fuente de la solución secuencial para
+aproximar PI con el método de Montecarlo, usando 100,000,000 coordenadas
+aleatorias.
+
+[source, java]
+----------------------------
+include::MonteCarloSequential.java[]
+----------------------------
+
+Se muestra la aproximación obtenida, así como el tiempo que tomó para que el
+programa se ejecutara completamente. No se considera tiempo de inicialización de
+variables. Al usar solo números aleatorios entre -1 y 1, evitamos tener que
+obtener la raíz al aplicar teorema de pitágoras, lo cual hace más eficiente el
+algoritmo en general.
+
+A continuación está la salida del programa:
+
+[source,text]
+----------------------------
+Calculated value: 3.14191548
+Time: 0.996244769
+----------------------------
+
+== Solución paralela Montecarlo
+A continuación se anexa el codigo fuente de la solución con streams para
+aproximar PI con el método de Montecarlo, usando 100,000,000 coordenadas
+aleatorias.
+
+[source,java]
+----------------------------
+include::MonteCarloStreams.java[]
+----------------------------
+
+Se muestra la aproximación obtenida, así como el tiempo que tomó para que el
+programa se ejecutara completamente. No se considera tiempo de inicialización de
+variables. Al usar solo números aleatorios entre -1 y 1, evitamos tener que
+obtener la raíz al aplicar teorema de pitágoras, lo cual hace más eficiente el
+algoritmo en general.
+
+A continuación está la salida del programa:
+
+[source,text]
+----------------------------
+Calculated value: 3.1413346
+Time: 0.742229738
+----------------------------
+
+== Resultados de las soluciones de Montecarlo
+A continuación mostramos varias corridas de ambos programas:
+
+.Tiempos de ejecución de la aproximación secuencial 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~1~ (segundos)
+| 1                | 1.011
+| 2                | 1.017
+| 3                | 1.096
+| 4                | 1.020
+| 5                | 0.996
+| Media aritmética | 1.028
+|=======================
+
+.Tiempos de ejecución de la aproximación en paralelo 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~2~ (segundos)
+| 1                | 0.699
+| 2                | 0.709
+| 3                | 0.719
+| 4                | 0.738
+| 5                | 0.704
+| Media aritmética | 0.713
+|=======================
+
+El speedup es de: 1.44X
+
+Podemos ver un aumento significativo en la ejecución del caso paralelo, sin ver
+demasiados cambios en la aproximación, ya que esta es igual de imprecisa en el
+caso secuencial como en el paralelo. Esto es debido al método y no debido a
+problemas de redondeo o de truncamiento.
+
+Un aspecto muy importante a resaltar es que la implementación paralela, aunque
+requiere entender otros aspectos de lo que el lenguaje tiene disponbile, no
+resulta realmente tan compleja de implementar y aprovecha muy bien los recursos
+que el equipo tiene disponibles para mejorar la ejecución del programa.
+
+== Solución Counting Sort
+A continuación se anexa el codigo fuente de la solución para hacer un Counting
+Sort. En este caso se hicieron tanto la solución secuencial como la paralela
+dentro del mismo programa, de forma que se pueda usar el mismo arreglo y en el
+mismo orden. Esto se lleva a cabo con un generador de números pseudo aleatorios,
+al cual se le da la misma semilla para ambos casos.
+
+Se usó un arreglo con 100,000 números aleatorios.
+
+[source, java]
+----------------------------
+include::CountingSort.java[]
+----------------------------
+
+Se muestra, en un principio, la versión del algoritmo que se está ejecutando, se
+revisa que el arreglo no empiece ya ordenado y luego se imprime el tiempo de
+ejecución de cada versión, así como la revisión de que el arreglo ya esté
+ordenado.
+
+El tiempo de ejecución no incluye la generación de los números ni el llenado del
+arreglo. Tampoco incluye el tiempo que toma revisar si el arreglo está ordenado
+o no, solamente se toma el tiempo que tarda el algoritmo de ordenamiento.
+
+Para el algoritmo con streams se intentó usar otro stream para recorrer el
+arreglo y realizar las comparaciones también en paralelo. Sin embargo, esto
+provocó que el programa tardara más en ejecutarse, a pesar de estar escrito para
+correr en paralelo. Es posible que esto sea debido a que se consumían más hilos
+de los que tenía disponibles el equipo y esto resultaba costoso de realizar.
+
+A continuación está la salida del programa:
+
+[source,text]
+----------------------------
+Sequential Version
+Sorted: false
+Sorted: true
+Time: 39,08
+Stream Version
+Sorted: false
+Sorted: true
+Time: 11,99
+----------------------------
+
+== Resultados de las soluciones de Montecarlo
+A continuación mostramos varias corridas del programa, separando los tiempos en
+sequencial y en paralelo:
+
+.Tiempos de ejecución de la aproximación secuencial 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~1~ (segundos)
+| 1                | 39.08
+| 2                | 38.62
+| 3                | 39.53
+| 4                | 40.01
+| 5                | 38.65
+| Media aritmética | 39.17
+|=======================
+
+.Tiempos de ejecución de la aproximación en paralelo 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~2~ (segundos)
+| 1                | 11.99
+| 2                | 12.00
+| 3                | 12.14
+| 4                | 12.19
+| 5                | 12.13
+| Media aritmética | 12.09
+|=======================
+
+El speedup es de: 3.24X
+
+Se puede observar un aumento bastante significativo en la solución paralela,
+obivamente obteniendo los mismos resultados, esto es que el arreglo queda en
+orden. En este caso es un aumento considerable ya que se reduce un algoritmo de
+O(N^2^) a un O(N) si es que se cuentan con tantos hilos como elementos a
+ordenar.
+
+A pesar de que este no es el caso ya que se usaron 100,000 elementos, seguimos
+observando un aumento muy bueno en el tiempo de ejecución.
+
+Al igual que con el método de Montecarlo podemos ver que la solución paralela no
+resulta tan compleja de impelmentar y sus resultados son bastante buenos. Esto
+deja claro que la funcionalidad de Streams que java provee es bastante eficiente
+y útil.

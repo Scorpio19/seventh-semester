@@ -1,0 +1,112 @@
+= Práctica #1: Aproximación de PI con threads de Java
+:author: Diego Galíndez Barreda (A01370815), Eduardo Yatziri Gaytán Martinez (A01165988)
+:lang: es
+:email: dgalindez1@gmail.com, A01165988@itesm.mx 
+:encoding: utf-8
+:revdate: 19 de agosto, 2015.
+:source-highlighter: coderay
+:numbered:
+
+Este reporte fue elaborado para el curso de _Programación multinúcleo_ del Tecnológico de Monterrey, Campus Estado de México.  
+
+:numbered:
+
+== Introducción
+Durante la práctica se está realizando una aproximación al valor de PI usando
+una integral ya definida. Esta aproximación se hace tanto de forma serial como
+de forma secuencial.
+
+[NOTE]
+.Hardware y software utilizado
+=============================
+Los programas se probaron en una laptop con las siguientes características:
+
+- Procesador Intel Core i5-4200U de 1.60GHz con dos núcleos y cuatro hyperthreads.
+- 5.7 GiB de memoria RAM.
+- Sistema operativo Ubuntu 14.04, kernel de Linux 3.19.0-25 de 64 bits.
+- Compilador Java 1.8.0_51 de Oracle.
+=============================
+
+== Solución secuencial
+A continuación se anexa el codigo fuente de la solución secuencial para
+aproximar PI con 10000 rectas:
+
+[source, java]
+----------------------------
+include::PiSequential.java[]
+----------------------------
+
+Se muestra la aproximación con todos los dígitos que java consigue así como el
+tiempo que le tomó al programa ejecutarse. No se considera el tiempo de
+asignación de valores a las variables ni los tiempos de impresión.
+
+A continuación está la salida del programa:
+
+[source,text]
+----------------------------
+Computed pi = 3.1415926535981615
+Time: 0.004
+----------------------------
+
+== Solución paralela
+A continuación se anexa el codigo fuente de la solución paralela para
+aproximar PI con 10000 rectas usando 4 hilos diferentes, uno por cada núcleo
+disponible en el hardware que usamos:
+
+[source,java]
+----------------------------
+include::PiParallel.java[]
+----------------------------
+
+Se muestra la aproximación con todos los dígitos que java consigue así como el
+tiempo que le tomó al programa ejecutarse. No se considera el tiempo de
+asignación de valores a las variables ni los tiempos de impresión.
+
+A continuación está la salida del programa:
+
+[source,text]
+----------------------------
+Computed pi = 3.141592653598127
+Time: 0.003
+----------------------------
+
+== Resultados
+A continuación mostramos varias corridas de ambos programas:
+
+.Tiempos de ejecución de la aproximación secuencial 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~1~ (segundos)
+| 1                | 0.004
+| 2                | 0.005
+| 3                | 0.005
+| 4                | 0.005
+| 5                | 0.004
+| Media aritmética | 0.0046
+|=======================
+
+.Tiempos de ejecución de la aproximación en paralelo 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~2~ (segundos)
+| 1                | 0.004
+| 2                | 0.004
+| 3                | 0.003
+| 4                | 0.003
+| 5                | 0.004
+| Media aritmética | 0.0036
+|=======================
+
+El speedup es de: 1.28X
+
+En el caso paralelo, vemos una leve variación con la aproximación secuencial.
+Esto se debe a problemas de redondeo al hacer las sumas por separado en cada 
+uno de los threads. También podemos ver que tiene un aumento de veocidad de
+ejecución en el caso paralelo.
+
+En este caso, al tratarse de una aproximación es aceptable que haya una
+variación pequeña en los resultados obtenidos. Sin embargo, entre más hilos se
+usen, mayor será esta variación en los resultados, lo cual puede ser no deseado
+para ciertas aplicaciones. Sin embargo, puede resultar conveniente por el
+aumento de velocidad, en caso que la aplicación que lo requiere acepte la ligera
+desviación.

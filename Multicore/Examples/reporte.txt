@@ -1,0 +1,118 @@
+= Práctica #0: Factoriales con Threads en Java
+:author: Pepper Pots (A01166611), Anthony Stark (A01160611)
+:lang: es
+:email: A01166611@itesm.mx, A01160611@itesm.mx 
+:encoding: utf-8
+:revdate:   18 de agosto, 2015.
+:numbered:
+
+Este reporte fue elaborado para el curso de _Programación multinúcleo_ del Tecnológico de Monterrey, Campus Estado de México.  
+
+:numbered:
+
+== Introducción
+
+Según <<Wolfram>>, el factorial de un número _N_ se define de manera iterativa como:
+
+*****************************
+_N_! = 1 &#215; 2  &#215; 3 &#215; ...  &#215; _N_ 
+*****************************
+
+En esta práctica se calculó el factorial de un número muy grande en Java  utilizando la clase +java.math.BigInteger+ (ver el API de Java en <<Oracle>>). El objetivo consistió en resolver este problema de manera secuencial y usando _threads_ de Java para obtener una solución paralela. 
+
+[NOTE]
+.Hardware y software utilizado
+=============================
+Los programas se probaron en una computadora de escritorio con las siguientes características:
+
+- Procesador Intel Core i7-4770 de 3.40GHz con cuatro núcleos y ocho _hyperthreads_. 
+- 7.7 GiB de memoria RAM.
+- Sistema operativo Ubuntu 14.04, kernel de Linux 3.13.0-62 de 64 bits.
+- Compilador Java 1.8.0_51 de Oracle.
+=============================
+
+== Solución secuencial
+
+El siguiente listado muestra un programa completo en Java que calcula de forma secuencial el factorial de 250,000:
+
+[source,java]
+----------------------------
+include::SequentialFactorial.java[]
+----------------------------
+
+Dado que el factorial de 250,000 es extremadamente grande para imprimirlo (más de un millon doscientos mil dígitos), se utilizó el método +bitCount+ para solo contar el número de bits igual a uno que tiene el valor binario del resultado.
+
+Esta es la salida del programa:
+
+[source,text]
+----------------------------
+Resultado = 1936401, Tiempo = 18.5650
+----------------------------
+
+== Solución paralela
+
+La solución paralela en Java involucra usar dos _threads_. El primer _thread_ se encarga de calcular la primera mitad de la multiplicaciones: 1 &#215; 2 &#215; 3 &#215; ... &#215; 125,000. El segundo _thread_ se encarga de calcular la otra mitad de las multiplicaciones: 125,001 &#215; 125,002 &#215; 125,003 &#215; ... &#215; 250,000. Una vez que terminan ambos _threads_, se multiplican los resultados de ambos para obtener el resultado final. El siguiente listado contiene el programa completo:
+
+[source,java]
+----------------------------
+include::ParallelFactorial.java[]
+----------------------------
+
+El programa produce esta salida:
+
+[source,text]
+----------------------------
+Resultado = 1936401, Tiempo = 6.4300
+----------------------------
+
+El _bit count_ es el mismo que en la versión secuencial, por lo que podemos suponer que nuestra versión paralela produce el resultado correcto. 
+
+== Resultados
+
+A continuación se muestran los tiempos de ejecución de varias corridas de los dos programas:
+
+.Tiempos de ejecución del factorial secuencial 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~1~ (segundos)
+| 1                | 18.5650
+| 2                | 19.1660
+| 3                | 19.3860
+| 4                | 18.8000
+| 5                | 18.8090 
+| Media aritmética | 18.9452   
+|=======================
+
+.Tiempos de ejecución del factorial paralelo 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~2~ (segundos)
+| 1                | 6.4300 
+| 2                | 6.9820
+| 3                | 6.7190
+| 4                | 6.5340
+| 5                | 6.7180
+| Media aritmética | 6.6766  
+|=======================
+
+A partir de las medias aritméticas calculadas, el _speedup_ obtenido en un CPU  que utiliza dos de sus núcleos (un _thread_ corriendo en cada núcleo) es:
+
+*****************************
+S~2~ = T~1~ / T~2~ = 18.9452 / 6.6766 = 2.8376
+*****************************
+
+El _speedup_ obtenido es muy bueno, incluso superando al _speedup_ ideal. La mejora obtenida en el tiempo compensa la complejidad adicional asociada al uso de _threads_ en Java. 
+       
+== Agradecimientos
+
+Se agradece a Steve Rogeres por sugerir usar LibreOffice Calc para calcular los promedios de los tiempos de ejecución.
+
+== Referencias
+
+[bibliography]
+
+- [[[Oracle]]] Oracle Corporation. _Java Platform, Standard Edition 8 API Specification_ http://docs.oracle.com/javase/8/docs/api/ (Consultada el 18 de agosto, 2015).
+
+- [[[Wolfram]]] Wolfram MathWorld. _Factorial_ 
+http://mathworld.wolfram.com/Factorial.html (Consultada el 18 de agosto, 2015). 
+

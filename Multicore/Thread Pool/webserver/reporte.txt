@@ -1,0 +1,147 @@
+= Práctica #2: Implementación de un pool de threads en Java
+:author: Diego Galíndez Barreda (A01370815), Eduardo Yatziri Gaytán Martinez (A01165988)
+:lang: es
+:email: dgalindez1@gmail.com, A01165988@itesm.mx 
+:encoding: utf-8
+:revdate: 28 de agosto, 2015.
+:numbered:
+
+Este reporte fue elaborado para el curso de _Programación multinúcleo_ del Tecnológico de Monterrey, Campus Estado de México.  
+
+:numbered:
+
+== Introducción
+Durante la práctica se optimizó un servidor web ya creado. La optimización se
+basó en implementar una _pool_ de hilos, de forma que cada hilo atendiera los
+pedidos que el servidor fuera recibiendo. La idea radica en no volver a crear un
+hilo cada vez que llega un pedido, ya que esta es una operación muy costosa.
+
+[NOTE]
+.Hardware y software utilizado
+=============================
+Los programas se probaron en una laptop con las siguientes características:
+
+- Procesador Intel Core i5-4200U de 1.60GHz con dos núcleos y cuatro hyperthreads.
+- 5.7 GiB de memoria RAM.
+- Sistema operativo Ubuntu 14.04, kernel de Linux 3.19.0-25 de 64 bits.
+- Compilador Java 1.8.0_51 de Oracle.
+=============================
+
+== Solución secuencial
+En este caso, solo presentaremos salidas del programa cuando se corre el script
+para benchmarks, ya que el código original es con el que se comenzó la práctica:
+
+[source,text]
+----------------------------
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+ruby benchmark.rb  0.14s user 0.05s system 0% cpu 34.064 total
+----------------------------
+
+== Solución paralela
+A continuación se anexa el código fuente de la solución paralela implementando
+una _pool_ de 4 hilos, uno por núcleo del hardware usado para atender cada pedido: 
+
+[source,java]
+----------------------------
+include::WebServer.java[]
+----------------------------
+
+A continuación, presentamos el código de +WorkerThread+, +Worker+ y +ThreadPool+
+los cuales definen los hilos, las respuestas a los pedidos y la _pool_ de hilos,
+respectivamente.
+
+[source,java]
+----------------------------
+include::WorkerThread.java[]
+----------------------------
+
+[source,java]
+----------------------------
+include::Worker.java[]
+----------------------------
+
+[source,java]
+----------------------------
+include::ThreadPool.java[]
+----------------------------
+
+A continuación está la salida del programa al usar el script de benchmarks:
+
+[source,text]
+----------------------------
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Service Unavailable
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+ruby benchmark.rb  0.10s user 0.02s system 5% cpu 2.040 total
+----------------------------
+
+== Resultados
+A continuación mostramos varias corridas de ambos programas:
+
+.Tiempos de ejecución de la solución secuencial 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~1~ (segundos)
+| 1                | 34.064
+| 2                | 34.066
+| 3                | 34.059
+| 4                | 34.057
+| 5                | 34.058
+| Media aritmética | 34.0608
+|=======================
+
+.Tiempos de ejecución de la solución en paralelo 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~2~ (segundos)
+| 1                | 2.040
+| 2                | 2.037
+| 3                | 2.045
+| 4                | 2.041
+| 5                | 2.038
+| Media aritmética | 2.0402
+|=======================
+
+El speedup es de: 16.7X
+
+En el caso paralelo, vemos un aumento enorme en cuanto a la velocidad de
+ejecución. Esto se debe a que cada hilo tomaba aproximadamente 2 segundos para
+responder completamente, lo cual implicaba que la solución secuencial tomaba dos
+veces la cantidad de pedidos que recibe para completarlos todos. En cambio, la
+solución paralela es capaz de dar respuesta casi inmediata (tan solo 2
+segundos). 
+
+Sin embargo, la solución paralela responde a todos los requests para los que no
+tuvo un hilo con un _Service Unavailable_. Esto no sería óptimo en un caso real,
+sería preferible enviar los pedidos a una cola y que estos fueran atendidos
+conforme cada hilo se libera y tiene oportunidad de ejecutar otra respuesta.

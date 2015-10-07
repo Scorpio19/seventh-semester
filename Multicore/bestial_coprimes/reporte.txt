@@ -1,0 +1,119 @@
+= Práctica #5: Coprimos Bestiales con Web Workers
+:author: Diego Galíndez Barreda (A01370815), Eduardo Watzuri Gaytán Martinez (A01165988)
+:lang: es
+:email: dgalindez1@gmail.com, A01165988@itesm.mx 
+:encoding: utf-8
+:revdate: 29 de septiembre, 2015.
+:source-highlighter: coderay
+:numbered:
+
+Este reporte fue elaborado para el curso de _Programación multinúcleo_ del Tecnológico de Monterrey, Campus Estado de México.  
+
+:numbered:
+
+== Introducción
+Durante la práctica se utilizan Web Workers de JavaScript para ejecutar código
+en paralelo dentro del navegador. Se realiza una sumatoria de todos los coprimos
+del número 666 (da number of the Beast) desde 1 hasta 100,000,000.
+
+Para realizar el cálculo secuencial, se utiliza un solo Web Worker, de forma que
+el navegador no quede bloqueado al estar en uso su thread principal. Para la
+solución paralela usamos 4 Web Workers.
+
+[NOTE]
+.Hardware y software utilizado
+=============================
+Los programas se probaron en una laptop con las siguientes características:
+
+- Procesador Intel Core i5-4200U de 1.60GHz con dos núcleos y cuatro hyperthreads.
+- 5.7 GiB de memoria RAM.
+- Sistema operativo Windows 8.1, de 64 bits.
+- Navegador Mozilla Firefox 40.0.3
+=============================
+
+== Soluciones
+A continuación se anexa el código usado para presentar la página en la que se
+crean los Web Workers. Tanto la solución secuencial como la paralela se realizan
+desde la misma página, primero la versión secuencial y despúes de terminada, la
+paralela.
+
+[source, html]
+----------------------------
+include::index.html[]
+----------------------------
+
+[source, css]
+----------------------------
+include::style.css[]
+----------------------------
+
+[source, javascript]
+----------------------------
+include::coprimes.js[]
+----------------------------
+
+[source, javascript]
+----------------------------
+include::coprime_worker.js[]
+----------------------------
+
+Se muestra el valor obtenido para la sumatoria y el tiempo que le toma a cada
+una ejecutarse.
+
+A continuación está la salida del programa:
+
+[source,text]
+----------------------------
+Sum of the coprimes of 666 between 1 and 1,000,000:
+Parallel result: 1621621578378396
+Time: 2.7994570506121974
+Sequential result: 1621621578378396
+Time: 6.952137189659585
+----------------------------
+
+== Resultados de las soluciones
+A continuación mostramos los tiempos de varias corridas de ambos programas:
+
+.Tiempos de ejecución de la suma secuencial 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~1~ (segundos)
+| 1                | 6.952
+| 2                | 6.839
+| 3                | 6.835
+| 4                | 6.960
+| 5                | 6.994
+| Media aritmética | 6.916
+|=======================
+
+.Tiempos de ejecución de la suma en paralelo 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~2~ (segundos)
+| 1                | 2.799
+| 2                | 2.567
+| 3                | 2.695
+| 4                | 2.820
+| 5                | 2.668
+| Media aritmética | 2.709
+|=======================
+
+El speedup es de: 2.55X
+
+Se puede ver que el aumento de velocidad de ejecución del caso paralelo es
+bastante significativo. En casos como este, es indudablemente superior el
+programa paralelo al secuencial, debido a que el resultado obtenido es el mismo.
+
+Se puede observar que ambos resultados son consistentes, lo cual implica que en
+este caso no tenemos ningún tipo de pérdida de información por truncamientos.
+Esto es de esperarse debido a que estamos trabajando con números enteros en todo
+momento, lo cual implica que no hay pérdidas por decimales. Sin embargo, es una
+buena forma de demostrar que el paso de mensajes de los Web Workers es,
+efectivamente, thread-safe.
+
+Es de gran importancia mencionar que el aumento no sería tan significativo si se
+realizara el cálculo hasta un número menor (pro ejemplo, hasta 1,000,000) ya que
+la creación de los Web Workers es muy costosa. También es importante mencionar
+que vemos tiempos considerablemente superiores en este ejercicio en comparación
+con los anteriores debido a que estamos usando JavaScript, el cual es un
+lenguaje considerablemente más lento que Java.
