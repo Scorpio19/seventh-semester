@@ -1,0 +1,49 @@
+= Actividad RSA
+:lang: es
+:encoding: utf-8
+:revdate: 10 de octubre, 2015.
+:source-highlighter: coderay
+
+:numbered:
+
+== Autores
+Equipo: Los Vatos de Azcapo
+
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| Nombre                          | Matricula
+| Diego Monroy Fraustro           | A01165792
+| Eduardo Azuri Gaytán Martinez   | A01165988
+| Carlos Alejandro Reyna Gonzalez | A01165824
+| Diego Galíndez Barreda          | A01370815
+|=======================
+
+== Descripción 
+Para obtener los números coprimos a 3220 que dieran como módulo inverso 1019, se
+utilizó el programa en JavaScript que se anexa a continuación. Como se puede ver
+resulta relativamente sencillo calcular los diferentes números que cumplen con
+esta condición y se tiene una gran cantidad de números a elegir. Se obtuvieron
+los coprimos hasta 1x10^8^, pero se podría hacer para más.
+En el archivo de E potenciales, se almacenaron todos los números obtenidos.
+
+[source, html]
+----------------------------
+include::index.html[]
+----------------------------
+
+[source, javascript]
+----------------------------
+include::coprimes.js[]
+----------------------------
+
+[source, javascript]
+----------------------------
+include::coprime_worker.js[]
+----------------------------
+
+== Números
+
+[source, text]
+----------------------------
+include::E potenciales.txt[]
+----------------------------

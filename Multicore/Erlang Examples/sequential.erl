@@ -1,3 +1,7 @@
+% Authors:
+%   A01370815 Diego Galindez Barreda
+%   A01165988 Eduardo Bazuri Gaytan Martinez 
+
 -module(sequential).
 -compile(export_all).
 

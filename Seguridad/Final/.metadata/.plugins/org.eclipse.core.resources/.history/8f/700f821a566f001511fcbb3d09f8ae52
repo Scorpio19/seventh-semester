@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="Electricidad Regional">
+        <property name="context-root" value="Electricidad_Regional"/>
+        <property name="java-output-path" value="/Electricidad Regional/build/classes"/>
+    </wb-module>
+</project-modules>
