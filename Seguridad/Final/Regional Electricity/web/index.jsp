@@ -20,8 +20,8 @@
                 </div>
 
                 <div class="preamble" id="zen-preamble" role="article">
-                    <% if(request.getAttribute("error") != null && "true".equalsIgnoreCase(request.getAttribute("error").toString())) { %>
-                    <div class="error">Invalid username or password</div>
+                    <% if(request.getAttribute("error") != null) { %>
+                    <div class="error"><%= request.getAttribute("error").toString() %></div>
                     <% } %>
                      <form class="form-container" action="LoginServlet" method="POST">
                         <div class="form-title"><h2>Login</h2></div>

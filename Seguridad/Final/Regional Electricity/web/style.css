@@ -194,3 +194,8 @@ footer a:link, footer a:visited {
    -moz-border-radius: 8px;
    border-radius: 8px;
 }
+
+th, tr {
+    padding-left: 30px;
+    text-align: center;
+}
