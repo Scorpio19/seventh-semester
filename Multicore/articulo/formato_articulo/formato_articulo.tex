@@ -1,0 +1,176 @@
+%%%
+%%%
+%%% Plantilla para artículo de Programación multinúcleo
+%%%
+%%% FAVOR DE NO CAMBIAR FUENTES, MÁRGENES, ETC.
+%%%
+
+\documentclass[10pt,letterpaper,oneside]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{endnotes}
+\usepackage{epsfig}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\usepackage[spanish,mexico]{babel}
+
+\begin{document}
+
+\renewcommand\abstractname{Resumen}
+\renewcommand\refname{Referencias}
+\renewcommand{\notesname}{Notas}
+
+\title{Plantilla para artículo de Programación multinúcleo}
+\author{
+\Large Anthony Stark (A01160611)
+\\
+Tecnológico de Monterrey, Campus Estado de México
+\\  
+\Large \textit{A01160611@itesm.mx}}  
+
+\maketitle
+
+\begin{abstract}
+Este documento, escrito en \LaTeX, sirve como base para la elaboración del artículo de investigación de la materia de \textit{Programación multinúcleo}. 
+\end{abstract}
+
+\section{Generalidades}
+
+El trabajo de investigación deberá ser elaborado de manera individual. Cada estudiante seleccionará un problema de programación (distinto a los vistos en clase o encargados de tarea) que pueda ser paralelizado usando al menos tres de las siete herramientas que fueron cubiertas en clase:
+    
+\begin{itemize}
+    \item \textit{Threads} en Java 
+    \item Fork/Join \textit{framework} en Java
+    \item \textit{Streams} paralelos en Java 8
+    \item \textit{Web Workers} en JavaScript
+    \item Procesos en Erlang    
+    \item OpenMP en C       
+    \item Intrínsicos SIMD en C
+\end{itemize}
+
+El problema seleccionado también debe ser resuelto de manera secuencial en cada uno de los lenguajes utilizados. 
+
+Se deben comparar los tiempos de ejecución de los programas escritos en los diferentes lenguajes y herramientas, tanto en sus versiones secuenciales como paralelas. Así mismo, se deben calcular los diferentes \textit{speedups} obtenidos y se deben realizar una o varias gráficas comparativas que presenten la información de manera clara.   
+
+Los resultados de la investigación deberán reportarse como un artículo de divulgación escrita en idioma español, utilizando el formato de este documento en {\LaTeX}\endnote{ El aprendizaje de {\LaTeX} corre a cargo de cada estudiante.}. El artículo deberá tener una extensión de por lo menos seis páginas (sin incluir los apéndices), y debe cumplir con los lineamientos de los elementos formales descritos en la \textit{Guía de presentación de trabajos escritos}~\cite{guia}. En particular, el trabajo debe contar con las siguientes secciones:
+    
+\begin{itemize}
+    \item \textbf{Datos:} título y autor de la investigación. 
+    \item \textbf{Resumen:} contenido abreviado y preciso del artículo. 
+    \item \textbf{Introducción:} descripción del problema que se va a resolver.
+    \item \textbf{Desarrollo:} explicación de la manera en que se resolvió el problema usando cada una de las herramientas.
+    \item \textbf{Conclusiones:} Enunciar las conclusiones personales sobre los resultados obtenidos.
+    \item \textbf{Agradecimientos:} esta sección es opcional.
+    \item \textbf{Referencias:} libros, revistas, sitios web, etc. que fueron consultados.
+    \item \textbf{Apéndices:} incluir en esta sección todos los códigos fuentes que fueron elaborados para la investigación.
+\end{itemize}
+
+El público al que está dirigido el artículo son los mismos compañeros de esta clase, así que se debe tener esto en mente al momento de realizar la redacción.
+
+Se evaluará la calidad técnica del artículo, así como su redacción, ortografía y la claridad y orden de la presentación de las ideas. 
+
+La fecha de entrega de este trabajo es el día del examen final (1 de diciembre del 2015).
+
+\section{Consejos adicionales}
+
+\subsection{Instalando {\LaTeX} en Ubuntu}
+
+Para instalar {\LaTeX} de manera completa en Ubuntu solo se debe teclear la siguiente instrucción desde la terminal:
+
+\begin{verbatim}
+    sudo apt-get install texlive-full
+\end{verbatim}
+
+Esta instrucción toma algo de tiempo ya que requiere descargar más de 900 MB. 
+
+\subsection{Código fuente}
+
+En {\LaTeX} se debe usar el ambiente \verb!verbatim! para colocar listados de código fuente. Por ejemplo:  
+
+\begin{verbatim}
+    #include <stdio.h>
+    
+    int main() {
+        printf("Hola Mundo!\n");
+        return 0;
+    }
+\end{verbatim}
+
+Los elementos de un programa que aparecen en un párrafo de texto normal (como el nombre de la función \verb!main!) deben ir dentro del comando \verb!\verb! o \verb!\texttt!.
+
+\subsection{Fórmulas}
+
+{\LaTeX} fue hecho pensando en el manejo de fórmulas matemáticas, por ejemplo:
+
+\begin{displaymath}
+\overline{x} = \frac{1}{n}\sum_{i=1}^n x_{i}
+\end{displaymath}
+
+\subsection{Tablas}
+
+Así se ven las tablas en {\LaTeX}:
+
+\begin{center}
+
+    \begin{tabular}{|r|r|}
+    \hline
+    \hline
+    $n$ & $n!$  \\
+    \hline
+    \hline
+    0 & 1         \\
+    1 & 1         \\
+    2 & 2         \\
+    3 & 6         \\
+    4 & 24        \\
+    5 & 120       \\
+    6 & 720       \\
+    7 & 5,040      \\
+    8 & 40,320     \\
+    9 & 362,880    \\    
+    \hline
+    \end{tabular}
+    
+\end{center}    
+    
+\subsection{Imágenes}
+
+Las imágenes que se deseen agregar al documento deben ser de alta calidad y deben estar en formato EPS\endnote{ LibreOffice Draw permite crear este tipo de imágenes con relativa facilidad.}. A continuación se presenta un ejemplo: 
+
+\centerline{\epsfig{figure=dibujo.eps,width=3in}}
+   
+\subsection{Más información sobre \LaTeX}
+
+La referencia completa y manual de usuario de {\LaTeX} está disponible en~\cite{lamport}. Y recuerda, si necesitas más información, ¡Google es tu mejor amigo!~\cite{giybf}.
+
+\section{Conclusiones}
+
+Lleva algo de tiempo aprender a usar {\LaTeX} correctamente. Sin embargo vale la pena por el resultado que se obtiene: documentos bellamente formateados. 
+
+\section{Agradecimientos}
+
+En esta sección se puede agradecer a las personas que ayudaron de cualquier manera a elaborar el trabajo. 
+
+\theendnotes
+ 
+\begin{thebibliography}{9}
+    
+\bibitem{guia}  
+    Departamento de letras del ITESM CEM. 
+    \emph{Guía de presentación de trabajos escritos.} \\
+    http://www.cem.itesm.mx/consulta/guia/ Accedido el 20 de octubre del 2015.
+    
+\bibitem{giybf}
+    GIYBF. 
+    \emph{Google is your best Friend!} \\
+    http://www.giybf.com/ Accedido el 20 de octubre del 2015.
+    
+\bibitem{lamport}
+    Lamport, L. 
+    \emph{\LaTeX: A Document Preparation System, 2nd Edition.} 
+    Addison-Wesley Professional, 1994.
+
+\end{thebibliography}
+
+\end{document}
