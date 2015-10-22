@@ -1,12 +1,7 @@
-http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3035/actividad_articulo/
-http://www.eecs.umich.edu/courses/eecs570/hw/parprefix.pdf
-cap 5 pacheco
-
-
-http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3049/activity_presentations_refactorings/
-http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3049/activity_refactoring/
-http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3049/calendario/
-
-http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3035/practica_erlang_mapreduce/
-http://webcem01.cem.itesm.mx:8005/s201513/tc3035/erlang_syntax_card.pdf
-file:///C:/Users/Diego/Documents/seventh-semester/Multicore/mapred/plists-1.0/doc/index.html
+http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3035/practica_erlang_mapreduce/ ##### 
+https://docs.google.com/spreadsheets/d/1CII__OBEBZp7xHqvWpLChKne_LBvZ_8MWOOs9XRb-Qg/edit#gid=1848580443 ##### 
+http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3049/activity_refactoring/ ##### 
+http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3049/activity_presentations_refactorings/ ##### 
+http://www.eecs.umich.edu/courses/eecs570/hw/parprefix.pdf ##### 
+http://webcem01.cem.itesm.mx:8005/apps/s201513/tc3035/actividad_articulo ##### 
+https://docs.google.com/document/d/1gOtKzNE0hJ1PNC0SsMaZe5Tsco8WgtIj2XACZGdk5Yg/edit ##### 
