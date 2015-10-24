@@ -1,113 +1,136 @@
+/*
+ * Authors:
+ *  A01370815 Diego Galindez Barreda
+ *  A01165988 Eduardo Azuri Gaytan Martinez 
+ */
+import java.util.ArrayList;
+
 public class Inverse {
+    public static int MAXN = 1000;
 
-  public static double[][] invert(double a[][]) {
-    int n = a.length;
-    double x[][] = new double[n][n];
-    double b[][] = new double[n][n];
-    int index[] = new int[n];
-    for (int i=0; i<n; ++i) 
-      b[i][i] = 1;
+    public static double[][] invert(double matrix[][]) {
+        int size = matrix.length;
 
-    // Transform the matrix into an upper triangle
-    gaussian(a, index);
+        double result[][] = new double[size][size];
+        double identity[][] = new double[size][size];
+        int index[] = new int[size];
 
-    // Update the matrix b[i][j] with the ratios stored
-    for (int i=0; i<n-1; ++i)
-      for (int j=i+1; j<n; ++j)
-        for (int k=0; k<n; ++k)
-          b[index[j]][k]
-          -= a[index[j]][i]*b[index[i]][k];
-
-          // Perform backward substitutions
-          for (int i=0; i<n; ++i) 
-          {
-            x[n-1][i] = b[index[n-1]][i]/a[index[n-1]][n-1];
-            for (int j=n-2; j>=0; --j) 
-            {
-              x[j][i] = b[index[j]][i];
-              for (int k=j+1; k<n; ++k) 
-              {
-                x[j][i] -= a[index[j]][k]*x[k][i];
-              }
-              x[j][i] /= a[index[j]][j];
-            }
-          }
-          return x;
-  }
-
-  // Method to carry out the partial-pivoting Gaussian
-  // elimination.  Here index[] stores pivoting order.
-  public static void gaussian(double a[][], int index[]) {
-    int n = index.length;
-    double c[] = new double[n];
-
-    // Initialize the index
-    for (int i=0; i<n; ++i) 
-      index[i] = i;
-
-    // Find the rescaling factors, one from each row
-    for (int i=0; i<n; ++i) 
-    {
-      double c1 = 0;
-      for (int j=0; j<n; ++j) 
-      {
-        double c0 = Math.abs(a[i][j]);
-        if (c0 > c1) c1 = c0;
-      }
-      c[i] = c1;
-    }
-
-    // Search the pivoting element from each column
-    int k = 0;
-    for (int j=0; j<n-1; ++j) 
-    {
-      double pi1 = 0;
-      for (int i=j; i<n; ++i) 
-      {
-        double pi0 = Math.abs(a[index[i]][j]);
-        pi0 /= c[index[i]];
-        if (pi0 > pi1) 
-        {
-          pi1 = pi0;
-          k = i;
+        for (int i = 0; i < size; i++) {
+            identity[i][i] = 1;
         }
-      }
 
-      // Interchange rows according to the pivoting order
-      int itmp = index[j];
-      index[j] = index[k];
-      index[k] = itmp;
-      for (int i=j+1; i<n; ++i) 	
-      {
-        double pj = a[index[i]][j]/a[index[j]][j];
+        // Transform the matrix into an upper triangle
+        gauss(matrix, index);
 
-        // Record pivoting ratios below the diagonal
-        a[index[i]][j] = pj;
+        // Update the identity matrix with the ratios stored
+        for (int i = 0; i < size - 1; i++)
+            for (int j = i + 1; j < size; j++)
+                for (int k = 0; k < size; k++)
+                    identity[index[j]][k] -= matrix[index[j]][i] * identity[index[i]][k];
 
-        // Modify other elements accordingly
-        for (int l=j+1; l<n; ++l)
-          a[index[i]][l] -= pj*a[index[j]][l];
-      }
+        // Backward substitution
+        for (int i = 0; i < size; i++) {
+            result[size - 1][i] = identity[index[size - 1]][i] / 
+                matrix[index[size - 1]][size - 1];
+            for (int j = size - 2; j >= 0; j--) {
+                result[j][i] = identity[index[j]][i];
+                for (int k = j + 1; k < size; k++) {
+                    result[j][i] -= matrix[index[j]][k] * result[k][i];
+                }
+                result[j][i] /= matrix[index[j]][j];
+            }
+        }
+        return result;
     }
-  }
 
-  public static void printMatrix(double[][] matrix) {
-    for (int i = 0; i < matrix.length; i++) {
-      for (int j = 0; j < matrix[0].length; j++) {
-        System.out.print(matrix[i][j] + ", ");
-      }
-      System.out.println();
+    // Gauss elimination. index[] stores pivots
+    public static void gauss(double matrix[][], int index[]) {
+        int size = index.length;
+        double c[] = new double[size];
+
+        for (int i = 0; i < size; i++) index[i] = i;
+
+        // Get ratios
+        for (int i = 0; i < size; i++) {
+            double min = 0, curr = 0;
+            for (int j = 0; j < size; j++) {
+                curr = Math.abs(matrix[i][j]);
+                if (curr > min) min = curr;
+            }
+            c[i] = min;
+        }
+
+        // Search the pivoting element from each column
+        int k = 0;
+        for (int j = 0; j < size - 1; j++) {
+            double pi, min = 0;
+            for (int i = j; i < size; i++) {
+                pi = Math.abs(matrix[index[i]][j]);
+                pi /= c[index[i]];
+                if (pi > min) {
+                    min = pi;
+                    k = i;
+                }
+            }
+
+            // Pivot rows
+            int tempIndex = index[j];
+            index[j] = index[k];
+            index[k] = tempIndex;
+            for (int i = j + 1; i < size; i++) {
+                double pj = matrix[index[i]][j] / matrix[index[j]][j];
+
+                // Record pivoting ratios below the diagonal
+                matrix[index[i]][j] = pj;
+
+                // Modify other elements accordingly
+                for (int l = j + 1; l < size; l++) {
+                    matrix[index[i]][l] -= pj * matrix[index[j]][l];
+                }
+            }
+        }
     }
-    System.out.println();
-  }
 
-  public static void main(String... args) {
-    double[][] matrix = {
-      { 2, 1,  1 },
-      { 1, 2, 1 },
-      { 1, 1, 2 }
-    };
-    printMatrix(matrix);
-    printMatrix(invert(matrix));
-  }
+    public static void printMatrix(double[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                System.out.print(matrix[i][j] + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public static void benchmark(String title, double[][] matrix, boolean sequential) {
+        double[][] inverse;
+
+        System.out.println(title);
+        //printMatrix(matrix);
+
+        long start = System.currentTimeMillis();
+        if (sequential) {
+            inverse = invert(matrix);
+        } else {
+            System.out.println("Hello");
+            inverse = invert(matrix);
+        }
+        long end = System.currentTimeMillis();
+        double time = (end - start) / 1000.0;
+
+        //printMatrix();
+        System.out.printf("Time: %.2f%n", time);
+    }
+
+    public static void main(String... args) {
+        double randomNum;
+        double[][] matrix = new double[MAXN][MAXN];
+        for (int i = 0; i < MAXN; i++) {
+            for (int j = 0; j < MAXN; j++) {
+                randomNum = 1.0 + (Math.random() * MAXN);
+                matrix[i][j] = randomNum;
+            }
+        }
+        benchmark("Sequential", matrix, true);
+        benchmark("Concurrent", matrix, false);
+    }
 }
