@@ -3,5 +3,5 @@ onmessage = function(event) {
   var line = [];
   line[row] = 1;
 
-  postMessage(line, row);
+  postMessage(line);
 }

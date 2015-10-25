@@ -10,9 +10,8 @@ $(function () {
   var identity = [];
 
   var startTime = performance.now();
-
   for (var i = 0; i < numWorkers; i++) {
-    var w = new Worker('matrix_worker.js');
+    var w = new Worker('identity_worker.js');
     w.postMessage({start: start, end: end});
 
     w.onmessage = function (event) {
@@ -28,7 +27,7 @@ $(function () {
 
   startTime = performance.now();
 
-  var w = new Worker('inverse_worker.js');
+  var w = new Worker('identity_worker.js');
   w.postMessage({start: 0, end: to * numWorkers});
 
   from = to * i;
