@@ -4,6 +4,7 @@
  *  A01165988 Eduardo Azuri Gaytan Martinez 
  */
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Inverse {
   public static int MAXN = 1000;
@@ -52,23 +53,23 @@ public class Inverse {
 
     // Get ratios
     for (int i = 0; i < size; i++) {
-      double min = 0, curr = 0;
+      double max = 0, curr = 0;
       for (int j = 0; j < size; j++) {
         curr = Math.abs(matrix[i][j]);
-        if (curr > min) min = curr;
+        if (curr > max) max = curr;
       }
-      c[i] = min;
+      c[i] = max;
     }
 
     // Search the pivoting element from each column
     int k = 0;
     for (int j = 0; j < size - 1; j++) {
-      double pi, min = 0;
+      double pi, max = 0;
       for (int i = j; i < size; i++) {
         pi = Math.abs(matrix[index[i]][j]);
         pi /= c[index[i]];
-        if (pi > min) {
-          min = pi;
+        if (pi > max) {
+          max = pi;
           k = i;
         }
       }
@@ -132,12 +133,13 @@ public class Inverse {
     }
     */
     double[][] matrix = {
-      {1, 1, 2},
-      {1, 2, 1},
-      {1, 1, 1}
+      {1, 1, 2, 1},
+      {1, 2, 1, 2},
+      {1, 1, 1, 3},
+      {2, 3, 1, 3}
     };
 
     benchmark("Sequential", matrix, true);
-    benchmark("Concurrent", matrix, false);
+    //benchmark("Concurrent", matrix, false);
   }
 }
