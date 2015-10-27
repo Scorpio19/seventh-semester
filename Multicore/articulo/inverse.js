@@ -133,17 +133,17 @@ function updateIdentity() {
   result.length = MAXN;
   for (var i = 0; i < MAXN - 1; i++)
     for (var j = i + 1; j < MAXN; j++)
+      // if index[i] != index[j] --> Parallelize
+      // else do sequentially
       for (var k = 0; k < MAXN; k++)
         identity[index[j]][k] -= matrix[index[j]][i] * identity[index[i]][k];
 
   // Backward substitution
+  result[MAXN - 1] = [];
+  result[MAXN - 1].length = MAXN;
   for (var i = 0; i < MAXN; i++) {
-    if (!result[MAXN -1]) {
-      result[MAXN-1] = [];
-      result[MAXN-1].length = MAXN;
-    }
-    result[MAXN - 1][i] = identity[index[MAXN - 1]][i] / 
-      matrix[index[MAXN - 1]][MAXN - 1];
+    // Embarassingly parallel
+    result[MAXN - 1][i] = identity[index[MAXN - 1]][i] / matrix[index[MAXN - 1]][MAXN - 1];
     for (var j = MAXN - 2; j >= 0; j--) {
       if (!result[j]) {
         result[j] = [];
