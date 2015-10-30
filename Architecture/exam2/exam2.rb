@@ -180,11 +180,11 @@ class PowersOfTwo
   # Refactor this class.
 
   def initialize(n)
-    @powers = n
+    @n = n
   end
 
   def powers
-    @powers = compute_powers_of_two(@powers)
+    @powers ||= compute_powers_of_two(@n)
   end
 
   private
