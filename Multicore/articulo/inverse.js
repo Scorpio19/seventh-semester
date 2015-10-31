@@ -1,6 +1,6 @@
 'use strict';
 
-var MAXN = 120;
+var MAXN = 150;
 var numWorkers = 4;
 var startTime;
 
@@ -13,49 +13,18 @@ padWorkers.length = numWorkers;
 var gaussWorkers = [];
 gaussWorkers.length = numWorkers;
 
-function scaleJordan(A, i, irow, j) {
-  if (j >= MAXN - 1) {
-    A.push(irow);
-    gaussJordan(A, i + 1);
-    return;
-  }
-
-  var jrow = A[j];
-  var scale = jrow[i];
-
-  var workersFinished = 0;
-  var start = 0;
-  var chunkSize = MAXN * 2 / numWorkers;
-  var end;
-  for (var k = 0; k < numWorkers; k++) {
-    end = start + chunkSize;
-    gaussWorkers[k].postMessage({start: start, end: end, irow: irow, jrow: jrow, scale: scale});
-    start += chunkSize;
-
-    gaussWorkers[k].onmessage = function (event) {
-      workersFinished++;
-      for (var l = event.data.start; l < event.data.end; l++) {
-        jrow[l] = event.data.jrow[l];
-      }
-      if (workersFinished === numWorkers) {
-        scaleJordan(A, i, irow, j + 1);
-      }
-    };
-  }
-}
-
 function gaussJordan(A, i) {
   if (i === A.length) {
     var endTime = performance.now();
     if (numWorkers > 1) {
       $("#parallel").html((endTime - startTime) / 1000);
-      printMatrix(A);
+      //printMatrix(A);
 
       numWorkers = 1;
       padMatrix(original);
     } else {
       $("#sequential").html((endTime - startTime) / 1000);
-      printMatrix(A);
+      //printMatrix(A);
     }
     return;
   }
@@ -67,21 +36,42 @@ function gaussJordan(A, i) {
   var start = 0;
   var chunkSize = MAXN * 2 / numWorkers;
   var end;
+
   for (var j = 0; j < numWorkers; j++) {
-    end = start + chunkSize;
+    end = j + 1 === numWorkers ? MAXN - 1 : Math.ceil(start + chunkSize);
     gaussWorkers[j].postMessage({start: start, end: end, irow: irow, val: val});
-    start += chunkSize;
-    
+    start = end;
+
     gaussWorkers[j].onmessage = function (event) {
       workersFinished++;
       for (var k = event.data.start; k < event.data.end; k++) {
         irow[k] = event.data.irow[k];
       }
+
       if (workersFinished === numWorkers) {
-          scaleJordan(A, i, irow, 0);
+        workersFinished = 0;
+        start = 0;
+        chunkSize = (MAXN - 1) / numWorkers;
+
+        for (var k = 0; k < numWorkers; k++) {
+          end = k + 1 === numWorkers ? MAXN - 1 : Math.ceil(start + chunkSize);
+          gaussWorkers[k].postMessage({start: start, end: end, irow: irow, i: i, A: A, size: MAXN});
+          start = end;
+
+          gaussWorkers[k].onmessage = function (event) {
+            workersFinished++;
+            for (var l = event.data.start; l < event.data.end; l++) {
+              A[l] = event.data.jrow[l];
+            }
+            if (workersFinished === numWorkers) {
+              A.push(irow);
+              gaussJordan(A, i + 1);
+            }
+          };
+        }
       }
-    };
-  }
+    }
+  };
 }
 
 function padMatrix(matrix) {
@@ -92,9 +82,9 @@ function padMatrix(matrix) {
   var end;
 
   for (var i = 0; i < numWorkers; i++) {
-    end = start + chunkSize;
+    end = i + 1 === numWorkers ? MAXN - 1 : Math.ceil(start + chunkSize);
     padWorkers[i].postMessage({start: start, end: end, matrix: matrix, size: MAXN});
-    start += chunkSize;
+    start = end;
 
     padWorkers[i].onmessage = function (event) {
       workersFinished++;
@@ -110,8 +100,8 @@ function padMatrix(matrix) {
 
 function printMatrix(matrix) {
   var res = "";
-  for (var i = 0; i < matrix.length; i++) {
-    for (var j = matrix.length; j < matrix.length * 2; j++) {
+  for (var i = 0; i < MAXN; i++) {
+    for (var j = MAXN; j < MAXN * 2; j++) {
       res += matrix[i][j] + ", ";
     }
     res += "\n";
@@ -130,15 +120,15 @@ $(function () {
   //*/
 
   //*
-  var randomNum;
-  for (var i = 0; i < MAXN; i++) {
-    original[i] = [];
-    original[i].length = MAXN;
-    for (var j = 0; j < MAXN; j++) {
-      randomNum = 1.0 + (Math.random() * MAXN);
-      original[i][j] = randomNum;
-    }
-  }
+     var randomNum;
+     for (var i = 0; i < MAXN; i++) {
+     original[i] = [];
+     original[i].length = MAXN;
+     for (var j = 0; j < MAXN; j++) {
+     randomNum = 1.0 + (Math.random() * MAXN);
+     original[i][j] = randomNum;
+     }
+     }
   //*/
 
   for (var i = 0; i < numWorkers; i++) {
