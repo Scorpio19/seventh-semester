@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.stream.*;
 
 public class Inverse {
-    public static int MAXN = 4;//1000;
+    public static int MAXN = 1000;
 
     // Sequential code
     public static double[][] invert(double matrix[][]) {
@@ -60,28 +60,25 @@ public class Inverse {
     }
 
     public static double[][] parallelGaussJordan(double matrix[][]) {
-        double val, scale;
-        double[] irow, jrow;
+        IntStream.range(0, MAXN).forEach(i -> {
+            double[] irow = Arrays.copyOf(matrix[0], MAXN * 2);
+            double val = irow[i];
 
-        IntStream.range(0, MAXN).forEach(i ->
-            irow = Arrays.copyOf(matrix[0], MAXN * 2);
-            val = irow[i];
-
-            IntStream.range(0, MAXN * 2).forEach(j ->
+            IntStream.range(0, MAXN * 2).parallel().forEach(j -> {
                 irow[j] /= val;
-            );
+            });
 
-            IntStream.range(1, MAXN).forEach(j -> {
-                jrow = matrix[j];
-                scale = matrix[j][i];
+            IntStream.range(1, MAXN).parallel().forEach(j -> {
+                double[] jrow = matrix[j];
+                double scale = matrix[j][i];
                 for (int k = 0; k < MAXN * 2; k++) {
                     jrow[k] -= (irow[k] * scale);
                 }
             });
 
-            for (int j = 0; j < MAXN - 1; j++) {
+            IntStream.range(0, MAXN - 1).forEach(j -> {
                 matrix[j] = matrix[j + 1];
-            }
+            });
 
             matrix[MAXN - 1] = Arrays.copyOf(irow, MAXN * 2);
         });
@@ -111,12 +108,12 @@ public class Inverse {
         long end = System.currentTimeMillis();
         double time = (end - start) / 1000.0;
 
-        printMatrix(matrix);
+        //printMatrix(matrix);
         System.out.printf("Time: %.2f%n", time);
     }
 
     public static void main(String... args) {
-        /*
+        //*
         double randomNum;
         double[][] sequential = new double[MAXN][MAXN * 2];
         double[][] parallel = new double[MAXN][MAXN * 2];
@@ -128,7 +125,7 @@ public class Inverse {
             }
         }
         //*/
-        //*
+        /*
         double[][] sequential = {
             {1, 1, 2, 1, 0, 0, 0, 0},
             {1, 2, 1, 2, 0, 0, 0, 0},
