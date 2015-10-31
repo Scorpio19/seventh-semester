@@ -7,139 +7,136 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Inverse {
-  public static int MAXN = 1000;
+    public static int MAXN = 1000;
 
-  public static double[][] invert(double matrix[][]) {
-    int size = matrix.length;
-
-    double result[][] = new double[size][size];
-    double identity[][] = new double[size][size];
-    int index[] = new int[size];
-
-    for (int i = 0; i < size; i++) {
-      identity[i][i] = 1;
-    }
-
-    // Transform the matrix into an upper triangle
-    gauss(matrix, index);
-
-    // Update the identity matrix with the ratios stored
-    for (int i = 0; i < size - 1; i++)
-      for (int j = i + 1; j < size; j++)
-        for (int k = 0; k < size; k++)
-          identity[index[j]][k] -= matrix[index[j]][i] * identity[index[i]][k];
-
-    // Backward substitution
-    for (int i = 0; i < size; i++) {
-      result[size - 1][i] = identity[index[size - 1]][i] / 
-        matrix[index[size - 1]][size - 1];
-      for (int j = size - 2; j >= 0; j--) {
-        result[j][i] = identity[index[j]][i];
-        for (int k = j + 1; k < size; k++) {
-          result[j][i] -= matrix[index[j]][k] * result[k][i];
+    // Sequential code
+    public static double[][] invert(double matrix[][]) {
+        for (int i = 0; i < MAXN; i++) {
+            matrix[i][MAXN + i] = 1;
         }
-        result[j][i] /= matrix[index[j]][j];
-      }
-    }
-    return result;
-  }
 
-  // Gauss elimination. index[] stores pivots
-  public static void gauss(double matrix[][], int index[]) {
-    int size = index.length;
-    double c[] = new double[size];
+        gaussJordan(matrix, 0);
 
-    for (int i = 0; i < size; i++) index[i] = i;
-
-    // Get ratios
-    for (int i = 0; i < size; i++) {
-      double max = 0, curr = 0;
-      for (int j = 0; j < size; j++) {
-        curr = Math.abs(matrix[i][j]);
-        if (curr > max) max = curr;
-      }
-      c[i] = max;
+        return matrix;
     }
 
-    // Search the pivoting element from each column
-    int k = 0;
-    for (int j = 0; j < size - 1; j++) {
-      double pi, max = 0;
-      for (int i = j; i < size; i++) {
-        pi = Math.abs(matrix[index[i]][j]);
-        pi /= c[index[i]];
-        if (pi > max) {
-          max = pi;
-          k = i;
+    public static double[][] gaussJordan(double matrix[][], int i) {
+        if (i == matrix.length) {
+            return matrix;
         }
-      }
 
-      // Pivot rows
-      int tempIndex = index[j];
-      index[j] = index[k];
-      index[k] = tempIndex;
-      for (int i = j + 1; i < size; i++) {
-        double pj = matrix[index[i]][j] / matrix[index[j]][j];
-
-        // Record pivoting ratios below the diagonal
-        matrix[index[i]][j] = pj;
-
-        // Modify other elements accordingly
-        for (int l = j + 1; l < size; l++) {
-          matrix[index[i]][l] -= pj * matrix[index[j]][l];
+        double[] irow = new double[MAXN * 2];
+        irow = Arrays.copyOf(matrix[0], MAXN * 2);
+        double val = irow[i];
+        for (int j = 0; j < MAXN * 2; j++) {
+            irow[j] /= val;
         }
-      }
+
+        for (int j = 1; j < MAXN; j++) {
+            double[] jrow = matrix[j];
+            double scale = matrix[j][i];
+            for (int k = 0; k < MAXN * 2; k++) {
+                jrow[k] -= (irow[k] * scale);
+            }
+        }
+        for (int j = 0; j < MAXN - 1; j++) {
+            matrix[j] = matrix[j + 1];
+        }
+        matrix[MAXN - 1] = new double[MAXN * 2];
+        matrix[MAXN - 1] = Arrays.copyOf(irow, MAXN * 2);
+
+        return gaussJordan(matrix, i + 1);
     }
-  }
 
-  public static void printMatrix(double[][] matrix) {
-    for (int i = 0; i < matrix.length; i++) {
-      for (int j = 0; j < matrix[0].length; j++) {
-        System.out.print(matrix[i][j] + ", ");
-      }
-      System.out.println();
+    // Parallel code
+    public static double[][] parallelInvert(double matrix[][]) {
+        for (int i = 0; i < MAXN; i++) {
+            matrix[i][MAXN + i] = 1;
+        }
+
+        parallelGaussJordan(matrix, 0);
+
+        return matrix;
     }
-    System.out.println();
-  }
 
-  public static void benchmark(String title, double[][] matrix, boolean sequential) {
-    double[][] inverse;
+    public static double[][] parallelGaussJordan(double matrix[][], int i) {
+        if (i == matrix.length) {
+            return matrix;
+        }
 
-    System.out.println(title);
-    //printMatrix(matrix);
+        double[] irow = new double[MAXN * 2];
+        irow = Arrays.copyOf(matrix[0], MAXN * 2);
+        double val = irow[i];
+        for (int j = 0; j < MAXN * 2; j++) {
+            irow[j] /= val;
+        }
 
-    long start = System.currentTimeMillis();
-    if (sequential) {
-      inverse = invert(matrix);
-    } else {
-      inverse = invert(matrix);
+        for (int j = 1; j < MAXN; j++) {
+            double[] jrow = matrix[j];
+            double scale = matrix[j][i];
+            for (int k = 0; k < MAXN * 2; k++) {
+                jrow[k] -= (irow[k] * scale);
+            }
+        }
+        for (int j = 0; j < MAXN - 1; j++) {
+            matrix[j] = matrix[j + 1];
+        }
+        matrix[MAXN - 1] = new double[MAXN * 2];
+        matrix[MAXN - 1] = Arrays.copyOf(irow, MAXN * 2);
+
+        return parallelGaussJordan(matrix, i + 1);
     }
-    long end = System.currentTimeMillis();
-    double time = (end - start) / 1000.0;
 
-    printMatrix(inverse);
-    System.out.printf("Time: %.2f%n", time);
-  }
-
-  public static void main(String... args) {
-    /*
-    double randomNum;
-    double[][] matrix = new double[MAXN][MAXN];
-    for (int i = 0; i < MAXN; i++) {
-      for (int j = 0; j < MAXN; j++) {
-        randomNum = 1.0 + (Math.random() * MAXN);
-        matrix[i][j] = randomNum;
-      }
+    public static void printMatrix(double[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = MAXN; j < matrix[0].length; j++) {
+                System.out.print(matrix[i][j] + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
-    */
-    double[][] matrix = {
-      {1, 1, 2, 1},
-      {1, 2, 1, 2},
-      {1, 1, 1, 3},
-      {2, 3, 1, 3}
-    };
 
-    benchmark("Sequential", matrix, true);
-    //benchmark("Concurrent", matrix, false);
-  }
+    public static void benchmark(String title, double[][] matrix, boolean sequential) {
+        double[][] inverse;
+
+        System.out.println(title);
+        //printMatrix(matrix);
+
+        long start = System.currentTimeMillis();
+        if (sequential) {
+            invert(matrix);
+        } else {
+            parallelInvert(matrix);
+        }
+        long end = System.currentTimeMillis();
+        double time = (end - start) / 1000.0;
+
+        //printMatrix(matrix);
+        System.out.printf("Time: %.2f%n", time);
+    }
+
+    public static void main(String... args) {
+        //*
+           double randomNum;
+           double[][] matrix = new double[MAXN][MAXN * 2];
+           for (int i = 0; i < MAXN; i++) {
+               for (int j = 0; j < MAXN; j++) {
+                   randomNum = 1.0 + (Math.random() * MAXN);
+                   matrix[i][j] = randomNum;
+               }
+           }
+           //*/
+           /*
+        double[][] matrix = {
+            {1, 1, 2, 1, 0, 0, 0, 0},
+            {1, 2, 1, 2, 0, 0, 0, 0},
+            {1, 1, 1, 3, 0, 0, 0, 0},
+            {2, 3, 1, 3, 0, 0, 0, 0}
+        };
+           */
+
+        benchmark("Sequential", Arrays.copyOf(matrix, MAXN), true);
+        benchmark("Concurrent", matrix, false);
+    }
 }
