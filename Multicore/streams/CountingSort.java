@@ -1,4 +1,3 @@
-/*
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.*;
@@ -86,4 +85,3 @@ public class CountingSort {
         benchmarkSort("Stream Version", array, CountingSort::streamCountSort);
     }
 }
-*/

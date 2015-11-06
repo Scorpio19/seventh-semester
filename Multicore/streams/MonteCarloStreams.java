@@ -1,4 +1,3 @@
-/*
 import java.util.concurrent.*;
 import java.util.stream.*;
 
@@ -36,4 +35,3 @@ public class MonteCarloStreams {
         System.out.println("Time: " + (timeEnd - timeStart) / 1E9);
     }
 }
-*/

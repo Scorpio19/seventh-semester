@@ -1,4 +1,3 @@
-/*
 import java.util.concurrent.*;
 
 public class MonteCarloSequential {
@@ -31,4 +30,3 @@ public class MonteCarloSequential {
         System.out.println("Time: " + (timeEnd - timeStart) / 1E9);
     }
 }
-*/
