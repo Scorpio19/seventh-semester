@@ -6,7 +6,7 @@
 
 #define NANOSECS_PER_SEC 1000000000
 
-const int MAXN = 10000;
+const int MAXN = 100000;
 const int NUM_THREADS = 4;
 
 int isSorted(int* array) {

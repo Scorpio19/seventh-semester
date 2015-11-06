@@ -5,8 +5,8 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.2">
-<meta name="author" content="Diego Galíndez Barreda (A01370815), Eduardo Watzuri Gaytán Martinez (A01165988)">
-<title>Práctica #4: Resolviendo problemas con Java Streams</title>
+<meta name="author" content="Diego Galíndez Barreda (A01370815), Eduardo Blatzuri Gaytán Martinez (A01165988)">
+<title>Práctica #9: Resolviendo problemas con OpenMP</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -503,21 +503,20 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article">
 <div id="header">
-<h1>Práctica #4: Resolviendo problemas con Java Streams</h1>
+<h1>Práctica #9: Resolviendo problemas con OpenMP</h1>
 <div class="details">
-<span id="author" class="author">Diego Galíndez Barreda (A01370815), Eduardo Watzuri Gaytán Martinez (A01165988)</span><br>
+<span id="author" class="author">Diego Galíndez Barreda (A01370815), Eduardo Blatzuri Gaytán Martinez (A01165988)</span><br>
 <span id="email" class="email"><a href="mailto:dgalindez1@gmail.com">dgalindez1@gmail.com</a>, <a href="mailto:A01165988@itesm.mx">A01165988@itesm.mx</a></span><br>
-<span id="revdate">19 de agosto, 2015.</span>
+<span id="revdate">6 de noviembre, 2015.</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_introducción">1. Introducción</a></li>
-<li><a href="#_solución_secuencial_montecarlo">2. Solución secuencial Montecarlo</a></li>
-<li><a href="#_solución_paralela_montecarlo">3. Solución paralela Montecarlo</a></li>
-<li><a href="#_resultados_de_las_soluciones_de_montecarlo">4. Resultados de las soluciones de Montecarlo</a></li>
-<li><a href="#_solución_counting_sort">5. Solución Counting Sort</a></li>
-<li><a href="#_resultados_de_las_soluciones_de_montecarlo_2">6. Resultados de las soluciones de Montecarlo</a></li>
+<li><a href="#_solución_de_montecarlo">2. Solución de Montecarlo</a></li>
+<li><a href="#_resultados_de_las_soluciones_de_montecarlo">3. Resultados de las soluciones de Montecarlo</a></li>
+<li><a href="#_solución_counting_sort">4. Solución Counting Sort</a></li>
+<li><a href="#_resultados_de_las_soluciones_de_countingsort">5. Resultados de las soluciones de CountingSort</a></li>
 </ul>
 </div>
 </div>
@@ -533,9 +532,10 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="_introducción">1. Introducción</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Durante la práctica se utilizan Streams de Java para solucionar problemas.
+<p>Durante la práctica se utiliza la funcionalidad que otorga OpenMP en C para
+implementar programas en paralelo.
 Se hace una aproximación al valor de PI con el método de Montecarlo y se hace un
-Counting Sort, ambos de forma secuencial y con streams de java para hacerlos en
+Counting Sort, ambos de forma secuencial y con pragmas de omp para hacerlos en
 paralelo.</p>
 </div>
 <div class="admonitionblock note">
@@ -561,7 +561,7 @@ paralelo.</p>
 <p>Sistema operativo Ubuntu 14.04, kernel de Linux 3.19.0-25 de 64 bits.</p>
 </li>
 <li>
-<p>Compilador Java 1.8.0_51 de Oracle.</p>
+<p>Compilador GCC 5.2</p>
 </li>
 </ul>
 </div>
@@ -572,136 +572,119 @@ paralelo.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_solución_secuencial_montecarlo">2. Solución secuencial Montecarlo</h2>
+<h2 id="_solución_de_montecarlo">2. Solución de Montecarlo</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>A continuación se anexa el codigo fuente de la solución secuencial para
-aproximar PI con el método de Montecarlo, usando 100,000,000 coordenadas
-aleatorias.</p>
+<p>A continuación se anexa el codigo fuente de la solución para aproximar PI con el
+método de Montecarlo, usando 100,000,000 coordenadas aleatorias.
+Se realizaron ambas soluciones dentro del mismo programa y estas se ejecutan de
+froma secuencial.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">java.util.concurrent</span>.*;
+<pre class="CodeRay highlight"><code data-lang="c"><span class="preprocessor">#include</span> <span class="include">&lt;omp.h&gt;</span>
+<span class="preprocessor">#include</span> <span class="include">&lt;stdio.h&gt;</span>
+<span class="preprocessor">#include</span> <span class="include">&lt;stdlib.h&gt;</span>
+<span class="preprocessor">#include</span> <span class="include">&lt;time.h&gt;</span>
 
-<span class="directive">public</span> <span class="type">class</span> <span class="class">MonteCarloSequential</span> {
+<span class="preprocessor">#define</span> NANOSECS_PER_SEC <span class="integer">1000000000</span>
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
-        <span class="type">int</span> sum = <span class="integer">0</span>;
-        <span class="type">int</span> n = <span class="integer">100</span>_000_000;
-        <span class="type">double</span> calc, x, y, h;
+<span class="directive">const</span> <span class="predefined-type">int</span> MAXN = <span class="integer">100000000</span>;
+<span class="directive">const</span> <span class="predefined-type">int</span> NUM_THREADS = <span class="integer">4</span>;
 
-        <span class="type">long</span> timeStart = <span class="predefined-type">System</span>.nanoTime();
+<span class="predefined-type">int</span> main(<span class="directive">void</span>) {
+    <span class="predefined-type">int</span> i, sum = <span class="integer">0</span>;
+    <span class="predefined-type">long</span> start_sequential, end_sequential, start_parallel, end_parallel;
+    <span class="predefined-type">double</span> calc, sequential, parallel, x, y, h;
+    <span class="predefined-type">unsigned</span> <span class="predefined-type">int</span> seed = time(<span class="predefined-constant">NULL</span>);
 
-        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; n; i++) {
-            <span class="comment">// Generar dos números aleatorios entre -1 y 1.</span>
-            x = ThreadLocalRandom.current().nextDouble() * <span class="integer">2</span> - <span class="integer">1</span>;
-            y = ThreadLocalRandom.current().nextDouble() * <span class="integer">2</span> - <span class="integer">1</span>;
+    <span class="comment">// Start time</span>
+    <span class="keyword">struct</span> timespec start_sequential_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;start_sequential_time);
+    start_sequential = start_sequential_time.tv_sec * NANOSECS_PER_SEC +
+        start_sequential_time.tv_nsec;
 
-            <span class="comment">// Aplicar teorema de Pitágoras.</span>
-            h = x * x + y * y;
+    <span class="keyword">for</span> (i = <span class="integer">0</span>; i &lt; MAXN; i++) {
+        x = (rand_r(&amp;seed) / (<span class="predefined-type">double</span>)RAND_MAX) * <span class="integer">2</span> - <span class="integer">1</span>;
+        y = (rand_r(&amp;seed) / (<span class="predefined-type">double</span>)RAND_MAX) * <span class="integer">2</span> - <span class="integer">1</span>;
 
-            <span class="comment">// Verificar si el tiro cayó dentro del círculo.</span>
-            <span class="keyword">if</span> (h &lt;= <span class="integer">1</span>) {
-                sum++;
-            }
-        }
+        h = x * x + y * y;
 
-        calc = <span class="integer">4</span> * ((<span class="type">double</span>) sum / n);
-        <span class="type">long</span> timeEnd = <span class="predefined-type">System</span>.nanoTime();
-
-        <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Calculated value: </span><span class="delimiter">&quot;</span></span> + calc);
-        <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Time: </span><span class="delimiter">&quot;</span></span> + (timeEnd - timeStart) / <span class="float">1E9</span>);
-    }
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Se muestra la aproximación obtenida, así como el tiempo que tomó para que el
-programa se ejecutara completamente. No se considera tiempo de inicialización de
-variables. Al usar solo números aleatorios entre -1 y 1, evitamos tener que
-obtener la raíz al aplicar teorema de pitágoras, lo cual hace más eficiente el
-algoritmo en general.</p>
-</div>
-<div class="paragraph">
-<p>A continuación está la salida del programa:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="text">Calculated value: 3.14191548
-Time: 0.996244769</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_solución_paralela_montecarlo">3. Solución paralela Montecarlo</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>A continuación se anexa el codigo fuente de la solución con streams para
-aproximar PI con el método de Montecarlo, usando 100,000,000 coordenadas
-aleatorias.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">java.util.concurrent</span>.*;
-<span class="keyword">import</span> <span class="include">java.util.stream</span>.*;
-
-<span class="directive">public</span> <span class="type">class</span> <span class="class">MonteCarloStreams</span> {
-
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">double</span> body(<span class="type">long</span> i) {
-        <span class="type">double</span> x = ThreadLocalRandom.current().nextDouble() * <span class="integer">2</span> - <span class="integer">1</span>;
-        <span class="type">double</span> y = ThreadLocalRandom.current().nextDouble() * <span class="integer">2</span> - <span class="integer">1</span>;
-
-        <span class="comment">// Aplicar teorema de Pitágoras.</span>
-        <span class="type">double</span> h = x * x + y * y;
-
-        <span class="comment">// Verificar si el tiro cayó dentro del círculo.</span>
         <span class="keyword">if</span> (h &lt;= <span class="integer">1</span>) {
-            <span class="keyword">return</span> <span class="float">1.0</span>;
+            sum++;
         }
-        <span class="keyword">return</span> <span class="float">0.0</span>;
     }
+    calc = <span class="integer">4</span> * ((<span class="predefined-type">double</span>)sum / MAXN);
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
-        <span class="type">int</span> n = <span class="integer">100</span>_000_000;
-        <span class="type">double</span> calc;
+    <span class="comment">//end time</span>
+    <span class="keyword">struct</span> timespec end_sequential_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;end_sequential_time);
+    end_sequential = end_sequential_time.tv_sec * NANOSECS_PER_SEC +
+        end_sequential_time.tv_nsec;
 
-        <span class="type">long</span> timeStart = <span class="predefined-type">System</span>.nanoTime();
+    sequential = (<span class="predefined-type">double</span>)(end_sequential - start_sequential) / NANOSECS_PER_SEC;
 
-        calc = LongStream
-            .range(<span class="integer">0</span>, n)
-            .parallel()
-            .mapToDouble(MonteCarloStreams::body)
-            .sum() / n * <span class="integer">4</span>;
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Sequential pi = %.16f</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>, calc);
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Sequential time = %.4f sec.</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>, sequential);
 
-        <span class="type">long</span> timeEnd = <span class="predefined-type">System</span>.nanoTime();
+    sum = <span class="integer">0</span>;
 
-        <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Calculated value: </span><span class="delimiter">&quot;</span></span> + calc);
-        <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Time: </span><span class="delimiter">&quot;</span></span> + (timeEnd - timeStart) / <span class="float">1E9</span>);
+    <span class="keyword">struct</span> timespec start_parallel_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;start_parallel_time);
+    start_parallel = start_parallel_time.tv_sec * NANOSECS_PER_SEC +
+        start_parallel_time.tv_nsec;
+
+<span class="preprocessor">#pragma</span> omp parallel <span class="keyword">for</span> reduction(+:sum) num_threads(NUM_THREADS) private(x, y)
+    <span class="keyword">for</span> (i = <span class="integer">0</span>; i &lt; MAXN; i++) {
+        x = (rand_r(&amp;seed) / (<span class="predefined-type">double</span>)RAND_MAX) * <span class="integer">2</span> - <span class="integer">1</span>;
+        y = (rand_r(&amp;seed) / (<span class="predefined-type">double</span>)RAND_MAX) * <span class="integer">2</span> - <span class="integer">1</span>;
+
+        h = x * x + y * y;
+
+        <span class="keyword">if</span> (h &lt;= <span class="integer">1</span>) {
+            sum++;
+        }
     }
+    calc = <span class="integer">4</span> * ((<span class="predefined-type">double</span>)sum / MAXN);
+
+    <span class="keyword">struct</span> timespec end_parallel_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;end_parallel_time);
+    end_parallel = end_parallel_time.tv_sec * NANOSECS_PER_SEC +
+        end_parallel_time.tv_nsec;
+
+    parallel = (<span class="predefined-type">double</span>)(end_parallel - start_parallel) / NANOSECS_PER_SEC;
+
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Parallel pi = %.16f</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>, calc);
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Parallel time = %.4f sec.</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>, parallel);
+    <span class="keyword">return</span> <span class="integer">0</span>;
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Se muestra la aproximación obtenida, así como el tiempo que tomó para que el
-programa se ejecutara completamente. No se considera tiempo de inicialización de
-variables. Al usar solo números aleatorios entre -1 y 1, evitamos tener que
-obtener la raíz al aplicar teorema de pitágoras, lo cual hace más eficiente el
-algoritmo en general.</p>
+<p>Se muestra la aproximación obtenida por cada método, así como el tiempo que
+tomó ejecutar cada uno.
+En ninguno de los dos casos se está considerando el tiempo de inicialización de
+ninguna de las variables usadas.
+Se usan números aleatorios en el rango de -1 y 1, de forma que no necesitamos
+obtener la raíz del número como se haría tradicionalmente por el teorema de
+pitágoras. Esto hace más eficiente el programa en general y simplifica el
+código.</p>
 </div>
 <div class="paragraph">
 <p>A continuación está la salida del programa:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="text">Calculated value: 3.1413346
-Time: 0.742229738</code></pre>
+<pre class="CodeRay highlight"><code data-lang="text">Sequential pi = 3.14154992
+Sequential time: 2.3111 sec.
+Parallel pi = 3.13443036
+Parallel time: 3.2811 sec.</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_resultados_de_las_soluciones_de_montecarlo">4. Resultados de las soluciones de Montecarlo</h2>
+<h2 id="_resultados_de_las_soluciones_de_montecarlo">3. Resultados de las soluciones de Montecarlo</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>A continuación mostramos varias corridas de ambos programas:</p>
@@ -721,29 +704,29 @@ Time: 0.742229738</code></pre>
 <tfoot>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Media aritmética</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">1.028</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">2.302</p></td>
 </tr>
 </tfoot>
 <tbody>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">1.011</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">2.311</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">2</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">1.017</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">2.284</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">1.096</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">2.303</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">4</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">1.020</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">2.307</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">5</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">0.996</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">2.309</p></td>
 </tr>
 </tbody>
 </table>
@@ -762,51 +745,63 @@ Time: 0.742229738</code></pre>
 <tfoot>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Media aritmética</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">0.713</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">3.266</p></td>
 </tr>
 </tfoot>
 <tbody>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">0.699</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">3.281</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">2</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">0.709</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">3.288</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">0.719</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">3.263</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">4</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">0.738</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">3.242</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">5</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">0.704</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">3.259</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>El speedup es de: 1.44X</p>
+<p>El speedup es de: 0.7X</p>
 </div>
 <div class="paragraph">
-<p>Podemos ver un aumento significativo en la ejecución del caso paralelo, sin ver
-demasiados cambios en la aproximación, ya que esta es igual de imprecisa en el
-caso secuencial como en el paralelo. Esto es debido al método y no debido a
-problemas de redondeo o de truncamiento.</p>
+<p>Podemos ver que el programa concurrente es de hecho más lento que el programa
+secuencial. Es posible que esto se deba a la función de rand_r, ya que esta está
+hecha para ser thread safe y es posible que esté bloqueando la ejecución (con
+algún tipo de seguro o semáforo) y esto provoca que la ejecución en paralelo sea
+más lenta, por la espera para el seguro además del overhead provocado por la
+creación y sincronización de los diferentes hilos.</p>
 </div>
 <div class="paragraph">
-<p>Un aspecto muy importante a resaltar es que la implementación paralela, aunque
-requiere entender otros aspectos de lo que el lenguaje tiene disponbile, no
-resulta realmente tan compleja de implementar y aprovecha muy bien los recursos
-que el equipo tiene disponibles para mejorar la ejecución del programa.</p>
+<p>A pesar de esto, el programa demuestra que pasar de la implementación secuencial
+(con algoritmos similares a este) a la paralela, resulta casi trivial y, si el
+sistema no tuviera soporte para OpenMP, la solución paralela se ejecutaría
+extactamente igual que la secuencial.</p>
+</div>
+<div class="paragraph">
+<p>Esto último representa una gran ventaja, porque permite que el sistema siga
+en uso aunque llegue a tener cambios que provoquen problemas de compatibilidad.</p>
+</div>
+<div class="paragraph">
+<p>Pese a ello, podemos afirmar que para este caso en particular no es conveniente
+usar la solución paralela, ya que es menos precisa y más lenta. Si hubiera
+alguna forma más eficiente de generar los números aleatorios, tal vez resultaría
+mejor.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_solución_counting_sort">5. Solución Counting Sort</h2>
+<h2 id="_solución_counting_sort">4. Solución Counting Sort</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>A continuación se anexa el codigo fuente de la solución para hacer un Counting
@@ -820,100 +815,138 @@ al cual se le da la misma semilla para ambos casos.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">java.util.Arrays</span>;
-<span class="keyword">import</span> <span class="include">java.util.Random</span>;
-<span class="keyword">import</span> <span class="include">java.util.stream</span>.*;
-<span class="keyword">import</span> <span class="include">java.util.function.Consumer</span>;
+<pre class="CodeRay highlight"><code data-lang="c"><span class="preprocessor">#include</span> <span class="include">&lt;omp.h&gt;</span>
+<span class="preprocessor">#include</span> <span class="include">&lt;stdio.h&gt;</span>
+<span class="preprocessor">#include</span> <span class="include">&lt;stdlib.h&gt;</span>
+<span class="preprocessor">#include</span> <span class="include">&lt;time.h&gt;</span>
+<span class="preprocessor">#include</span> <span class="include">&lt;string.h&gt;</span>
 
-<span class="directive">public</span> <span class="type">class</span> <span class="class">CountingSort</span> {
+<span class="preprocessor">#define</span> NANOSECS_PER_SEC <span class="integer">1000000000</span>
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">int</span><span class="type">[]</span> createRandomArray(<span class="type">int</span> size, <span class="type">long</span> seed) {
-        <span class="type">int</span><span class="type">[]</span> array = <span class="keyword">new</span> <span class="type">int</span>[size];
-        <span class="predefined-type">Random</span> random = <span class="keyword">new</span> <span class="predefined-type">Random</span>(seed);
-        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; size; i++) {
-            array[i] = random.nextInt();
+<span class="directive">const</span> <span class="predefined-type">int</span> MAXN = <span class="integer">100000</span>;
+<span class="directive">const</span> <span class="predefined-type">int</span> NUM_THREADS = <span class="integer">4</span>;
+
+<span class="predefined-type">int</span> isSorted(<span class="predefined-type">int</span>* array) {
+    <span class="predefined-type">int</span> i = <span class="integer">0</span>;
+    <span class="keyword">for</span> (i = <span class="integer">0</span>; i &lt; MAXN - <span class="integer">1</span>; i++) {
+        <span class="keyword">if</span> (array[i] &gt; array[i + <span class="integer">1</span>]) {
+            <span class="keyword">return</span> <span class="integer">0</span>;
         }
-        <span class="keyword">return</span> array;
     }
+    <span class="keyword">return</span> <span class="integer">1</span>;
+}
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">boolean</span> isSorted(<span class="type">int</span><span class="type">[]</span> array) {
-        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>, n = array.length - <span class="integer">1</span>; i &lt; n; i++) {
-            <span class="keyword">if</span> (array[i] &gt; array[i + <span class="integer">1</span>]) {
-                <span class="keyword">return</span> <span class="predefined-constant">false</span>;
+<span class="directive">void</span> arrayIsSorted(<span class="predefined-type">int</span>* array) {
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Array is sorted: </span><span class="delimiter">&quot;</span></span>);
+    <span class="keyword">if</span> (isSorted(array)) {
+        printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Yes</span><span class="delimiter">&quot;</span></span>);
+    } <span class="keyword">else</span> {
+        printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">No</span><span class="delimiter">&quot;</span></span>);
+    }
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>);
+}
+
+<span class="directive">void</span> sequentialCountSort(<span class="predefined-type">int</span>* a) {
+    <span class="predefined-type">int</span>* temp = malloc(<span class="keyword">sizeof</span>(<span class="predefined-type">int</span>)* MAXN);
+    <span class="predefined-type">int</span> i, j;
+
+    <span class="keyword">for</span> (i = <span class="integer">0</span>; i &lt; MAXN; i++) {
+        <span class="predefined-type">int</span> count = <span class="integer">0</span>;
+        <span class="keyword">for</span> (j = <span class="integer">0</span>; j &lt; MAXN; j++) {
+            <span class="keyword">if</span> (a[j] &lt; a[i]) {
+                count++;
+            } <span class="keyword">else</span> <span class="keyword">if</span> (a[i] == a[j] &amp;&amp; j &lt; i) {
+                count++;
             }
         }
-        <span class="keyword">return</span> <span class="predefined-constant">true</span>;
+        temp[count] = a[i];
+    }
+    memcpy(a, temp, <span class="keyword">sizeof</span>(<span class="predefined-type">int</span>) * MAXN);
+}
+
+<span class="directive">void</span> parallelCountSort(<span class="predefined-type">int</span>* a) {
+   <span class="predefined-type">int</span>* temp = malloc(<span class="keyword">sizeof</span>(<span class="predefined-type">int</span>) * MAXN);
+   <span class="predefined-type">int</span> i;
+
+<span class="preprocessor">#pragma</span> omp parallel <span class="keyword">for</span> num_threads(NUM_THREADS)
+   <span class="keyword">for</span> (i = <span class="integer">0</span>; i &lt; MAXN; i++) {
+       <span class="predefined-type">int</span> count = <span class="integer">0</span>;
+       <span class="predefined-type">int</span> j = <span class="integer">0</span>;
+       <span class="keyword">for</span> (j = <span class="integer">0</span>; j &lt; MAXN; j++) {
+           <span class="keyword">if</span> (a[j] &lt; a[i]) {
+               count++;
+           } <span class="keyword">else</span> <span class="keyword">if</span> (a[i] == a[j] &amp;&amp; j &lt; i) {
+               count++;
+           }
+       }
+       temp[count] = a[i];
+   }
+   memcpy(a, temp, <span class="keyword">sizeof</span>(<span class="predefined-type">int</span>) * MAXN);
+}
+
+<span class="predefined-type">int</span> main(<span class="directive">void</span>) {
+    <span class="predefined-type">int</span> i, sorted;
+    <span class="predefined-type">int</span> *arrayS = malloc(<span class="keyword">sizeof</span>(<span class="predefined-type">int</span>) * MAXN);
+    <span class="predefined-type">int</span> *arrayP = malloc(<span class="keyword">sizeof</span>(<span class="predefined-type">int</span>) * MAXN);
+
+    <span class="predefined-type">unsigned</span> <span class="predefined-type">int</span> seed = time(<span class="predefined-constant">NULL</span>);
+
+    <span class="predefined-type">long</span> start_sequential, end_sequential, start_parallel, end_parallel;
+
+    <span class="predefined-type">double</span> calc, sequential, parallel;
+
+    <span class="keyword">for</span> (i = <span class="integer">0</span>; i &lt; MAXN; i++) {
+        arrayS[i] = rand_r(&amp;seed);
+        arrayP[i] = rand_r(&amp;seed);
     }
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">double</span> benchmarkSort(<span class="predefined-type">String</span> title, <span class="type">int</span><span class="type">[]</span> array, Consumer&lt;<span class="type">int</span><span class="type">[]</span>&gt; sorter) {
-        <span class="predefined-type">System</span>.out.println(title);
-        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Sorted: %b%n</span><span class="delimiter">&quot;</span></span>, isSorted(array));
-        <span class="type">long</span> start = <span class="predefined-type">System</span>.currentTimeMillis();
-        sorter.accept(array);
-        <span class="type">long</span> end = <span class="predefined-type">System</span>.currentTimeMillis();
-        <span class="type">double</span> time = (end - start) / <span class="float">1000.0</span>;
-        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Sorted: %b%n</span><span class="delimiter">&quot;</span></span>, isSorted(array));
-        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Time: %.2f%n</span><span class="delimiter">&quot;</span></span>, time);
-        <span class="keyword">return</span> time;
-    }
+    arrayIsSorted(arrayS);
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> sequentialCountSort(<span class="type">int</span> a<span class="type">[]</span>) {
-        <span class="directive">final</span> <span class="type">int</span> n = a.length;
-        <span class="directive">final</span> <span class="type">int</span><span class="type">[]</span> temp = <span class="keyword">new</span> <span class="type">int</span>[n];
+    <span class="keyword">struct</span> timespec start_sequential_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;start_sequential_time);
+    start_sequential = start_sequential_time.tv_sec * NANOSECS_PER_SEC +
+        start_sequential_time.tv_nsec;
 
-        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; n; i++) {
-            <span class="type">int</span> count = <span class="integer">0</span>;
-            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="integer">0</span>; j &lt; n; j++) {
-                <span class="keyword">if</span> (a[j] &lt; a[i]) {
-                    count++;
-                } <span class="keyword">else</span> <span class="keyword">if</span> (a[i] == a[j] &amp;&amp; j &lt; i) {
-                    count++;
-                }
-            }
-            temp[count] = a[i];
-        }
+    sequentialCountSort(arrayS);
 
-        <span class="predefined-type">System</span>.arraycopy(temp, <span class="integer">0</span>, a, <span class="integer">0</span>, n);
-    }
+    <span class="keyword">struct</span> timespec end_sequential_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;end_sequential_time);
+    end_sequential = end_sequential_time.tv_sec * NANOSECS_PER_SEC +
+        end_sequential_time.tv_nsec;
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> streamCountSort(<span class="type">int</span> a<span class="type">[]</span>) {
-        <span class="directive">final</span> <span class="type">int</span> n = a.length;
-        <span class="directive">final</span> <span class="type">int</span><span class="type">[]</span> temp = <span class="keyword">new</span> <span class="type">int</span>[n];
+    sequential = (<span class="predefined-type">double</span>)(end_sequential - start_sequential) / NANOSECS_PER_SEC;
 
-        IntStream
-            .range(<span class="integer">0</span>, n)
-            .parallel()
-            .forEach(i -&gt; {
-                <span class="type">int</span> count = <span class="integer">0</span>;
-                <span class="keyword">for</span> (<span class="type">int</span> j = <span class="integer">0</span>; j &lt; n; j++) {
-                    <span class="keyword">if</span> (a[j] &lt; a[i]) {
-                        count++;
-                    } <span class="keyword">else</span> <span class="keyword">if</span> (a[i] == a[j] &amp;&amp; j &lt; i) {
-                        count++;
-                    }
-                }
-                temp[count] = a[i];
-            });
-        <span class="predefined-type">System</span>.arraycopy(temp, <span class="integer">0</span>, a, <span class="integer">0</span>, n);
-    }
+    arrayIsSorted(arrayS);
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Sequential time = %.4f sec.</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>, sequential);
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        <span class="directive">final</span> <span class="type">int</span> N = <span class="integer">100</span>_000;
-        <span class="directive">final</span> <span class="type">long</span> SEED = <span class="integer">42</span>;
-        <span class="type">int</span><span class="type">[]</span> array = createRandomArray(N, SEED);
-        benchmarkSort(<span class="string"><span class="delimiter">&quot;</span><span class="content">Sequential Version</span><span class="delimiter">&quot;</span></span>, array, CountingSort::sequentialCountSort);
+    arrayIsSorted(arrayP);
+    <span class="keyword">struct</span> timespec start_parallel_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;start_parallel_time);
+    start_parallel = start_parallel_time.tv_sec * NANOSECS_PER_SEC +
+        start_parallel_time.tv_nsec;
 
-        array = createRandomArray(N, SEED);
-        benchmarkSort(<span class="string"><span class="delimiter">&quot;</span><span class="content">Stream Version</span><span class="delimiter">&quot;</span></span>, array, CountingSort::streamCountSort);
-    }
+    parallelCountSort(arrayP);
+
+    <span class="keyword">struct</span> timespec end_parallel_time;
+    clock_gettime(CLOCK_MONOTONIC, &amp;end_parallel_time);
+    end_parallel = end_parallel_time.tv_sec * NANOSECS_PER_SEC +
+        end_parallel_time.tv_nsec;
+
+    parallel = (<span class="predefined-type">double</span>)(end_parallel - start_parallel) / NANOSECS_PER_SEC;
+
+    arrayIsSorted(arrayP);
+    printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Parallel time = %.4f sec.</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>, parallel);
+
+    <span class="keyword">return</span> <span class="integer">0</span>;
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Se muestra, en un principio, la versión del algoritmo que se está ejecutando, se
-revisa que el arreglo no empiece ya ordenado y luego se imprime el tiempo de
-ejecución de cada versión, así como la revisión de que el arreglo ya esté
-ordenado.</p>
+<p>Se muestra si el arreglo sobre el que se va a ejecutar el ordenamiento está ya
+ordenado o no. Después se realiza el ordenamiento y se revisa si ya está
+ordenado y se da el tiempo de ejecución. Esto se hace para cada versión, de
+forma que se pueden comparar fácilmente los tiempos y verificar que sí funciona
+el algoritmo de forma correcta en ambos casos.</p>
 </div>
 <div class="paragraph">
 <p>El tiempo de ejecución no incluye la generación de los números ni el llenado del
@@ -921,31 +954,22 @@ arreglo. Tampoco incluye el tiempo que toma revisar si el arreglo está ordenado
 o no, solamente se toma el tiempo que tarda el algoritmo de ordenamiento.</p>
 </div>
 <div class="paragraph">
-<p>Para el algoritmo con streams se intentó usar otro stream para recorrer el
-arreglo y realizar las comparaciones también en paralelo. Sin embargo, esto
-provocó que el programa tardara más en ejecutarse, a pesar de estar escrito para
-correr en paralelo. Es posible que esto sea debido a que se consumían más hilos
-de los que tenía disponibles el equipo y esto resultaba costoso de realizar.</p>
-</div>
-<div class="paragraph">
 <p>A continuación está la salida del programa:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="text">Sequential Version
-Sorted: false
-Sorted: true
-Time: 39,08
-Stream Version
-Sorted: false
-Sorted: true
-Time: 11,99</code></pre>
+<pre class="CodeRay highlight"><code data-lang="text">Array is sorted: No
+Array is sorted: Yes
+Sequential time: 64.2468
+Array is sorted: No
+Array is sorted: Yes
+Parallel time: 31.5477</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_resultados_de_las_soluciones_de_montecarlo_2">6. Resultados de las soluciones de Montecarlo</h2>
+<h2 id="_resultados_de_las_soluciones_de_countingsort">5. Resultados de las soluciones de CountingSort</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>A continuación mostramos varias corridas del programa, separando los tiempos en
@@ -966,29 +990,29 @@ sequencial y en paralelo:</p>
 <tfoot>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Media aritmética</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">39.17</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">64.2281</p></td>
 </tr>
 </tfoot>
 <tbody>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">39.08</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">64.2468</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">2</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">38.62</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">64.1975</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">39.53</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">64.2401</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">4</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">40.01</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">64.2255</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">5</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">38.65</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">64.2304</p></td>
 </tr>
 </tbody>
 </table>
@@ -1007,34 +1031,34 @@ sequencial y en paralelo:</p>
 <tfoot>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">Media aritmética</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">12.09</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">31.4442</p></td>
 </tr>
 </tfoot>
 <tbody>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">11.99</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">31.5477</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">2</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">12.00</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">31.0390</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">12.14</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">31.5025</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">4</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">12.19</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">31.6101</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-center valign-top"><p class="tableblock">5</p></td>
-<td class="tableblock halign-center valign-top"><p class="tableblock">12.13</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">31.5218</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>El speedup es de: 3.24X</p>
+<p>El speedup es de: 2.04X</p>
 </div>
 <div class="paragraph">
 <p>Se puede observar un aumento bastante significativo en la solución paralela,
@@ -1045,20 +1069,25 @@ ordenar.</p>
 </div>
 <div class="paragraph">
 <p>A pesar de que este no es el caso ya que se usaron 100,000 elementos, seguimos
-observando un aumento muy bueno en el tiempo de ejecución.</p>
+observando un aumento muy bueno en el tiempo de ejecución. Reduce el tiempo
+aproximadamente a la mitad.</p>
 </div>
 <div class="paragraph">
 <p>Al igual que con el método de Montecarlo podemos ver que la solución paralela no
-resulta tan compleja de impelmentar y sus resultados son bastante buenos. Esto
-deja claro que la funcionalidad de Streams que java provee es bastante eficiente
-y útil.</p>
+resulta tan compleja de impelmentar, de hecho es muy sencilla ya que solo se
+requiere agregar las directivas adecuadas y los resultados son bastante
+eficientes.</p>
+</div>
+<div class="paragraph">
+<p>En este caso es innegable la ventaja de usar la versión paralela, ya que tiene
+los mismos resultados que la secuencial en la mitad del tiempo.</p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-09-16 14:23:16 Hora de verano central (MΘxico)
+Last updated 2015-11-06 15:15:18 Central Standard Time (Mexico)
 </div>
 </div>
 </body>
