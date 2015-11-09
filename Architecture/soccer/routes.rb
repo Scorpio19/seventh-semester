@@ -1,14 +1,15 @@
 require 'sinatra'
-
-#Dir[File.dirname(__FILE__) + '/models'].each {|file| require file }
-#Dir[File.dirname(__FILE__) + '/controllers'].each {|file| require file }
+require 'haml'
 
 get '/' do
   haml :index
-  #http://code.tutsplus.com/tutorials/an-introduction-to-haml-and-sinatra--net-14858
 end
 
 # Admin stuff
+post '/open' do
+  params[:password]
+end
+
 get '/open' do
   haml :open, locals: {title: "Open"}
 end

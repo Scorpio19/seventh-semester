@@ -1,0 +1,45 @@
+body {
+  background-color: #BBB;
+}
+
+#wrapper {
+  background-color: #FFF;
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  bottom: 5%;
+  right: 5%;
+  padding: 2em;
+  padding-top: 1em;
+}
+
+#wrapper h1 {
+  margin: 0;
+}
+
+#content {
+  padding: 1em;
+}
+
+#log_in {
+  width: 30%;
+  position: absolute;
+  left: 35%;
+  text-align: center;
+}
+
+#log_in h3 {
+  font-size: 3em;
+}
+
+#log_in .form-control {
+  font-size: 18px;
+  height: 100%;
+}
+
+#footer {
+  font-size: 11px;
+  position: absolute;
+  bottom: 5%;
+  left: 40%;
+}
