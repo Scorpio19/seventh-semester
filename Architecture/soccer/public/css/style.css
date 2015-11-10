@@ -17,14 +17,51 @@ body {
   margin: 0;
 }
 
+#side_bar {
+  z-index: 1000;
+  position: fixed;
+  left: 6%; 
+  top: 6%;
+  width: 180px;
+  font-size: 18px;
+  line-height: 2em;
+}
+
+#side_bar ul {
+  list-style: none;
+}
+
+#side_bar a {
+  color: #000;
+  text-decoration: none;
+}
+
+#side_bar a:hover {
+  background-color: #000;
+  color: #FFF;
+  text-decoration: none;
+}
+
+#header {
+  position: absolute;
+  left: 180px; 
+  top: 0;
+  padding: 1em;
+}
+
 #content {
+  position: absolute;
+  left: 180px; 
+  top: 110px;
+  width: 85%;
+  height: 70%;
   padding: 1em;
 }
 
 #log_in {
   width: 30%;
   position: absolute;
-  left: 35%;
+  left: 30%;
   text-align: center;
 }
 
@@ -32,7 +69,7 @@ body {
   font-size: 3em;
 }
 
-#log_in .form-control {
+.form-control {
   font-size: 18px;
   height: 100%;
 }
@@ -42,4 +79,8 @@ body {
   position: absolute;
   bottom: 5%;
   left: 40%;
+}
+
+input[type='number'] {
+  width: 3em;
 }

@@ -1,0 +1,12 @@
+#log_in
+  %h3 Register
+  %form{class: "form-control", action: "/register", method: "post"}
+    %label{for: :username} Username:
+    %input{name: :username, type: "text"}
+    %br
+    %br
+    %label{for: :password} Password:
+    %input{name: :password, type: "password"}
+    %br
+    %br
+    %input{class: "btn btn-success", type: "submit", value: "Register"}
