@@ -14,7 +14,7 @@
           %a(href='/polls')
             Home
           %ul
-            -if locals[:user].admin
+            -if locals[:admin]
               %li
                 %a(href='/open')
                   Open Poll
@@ -34,9 +34,9 @@
       #header
         %h1 Soccer Polls
         %h3 A Simple website for the Software Design and Architecture course.
-        -if locals[:error]
-          #error
-            %p=locals[:error]
+        -if locals[:message]
+          #message
+            %p=locals[:message]
 
       #content
         =yield
