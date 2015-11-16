@@ -1,5 +1,13 @@
 require 'sinatra'
 require 'haml'
+require 'active_record'
+
+ActiveRecord::Base.establish_connection(
+  :adapter => 'sqlite3',
+  :database => 'soccer.db'
+)
+
+require_relative 'schema.rb'
 require_relative 'controllers/user_controller'
 require_relative 'controllers/poll_controller'
 require_relative 'controllers/pick_controller'
@@ -11,7 +19,11 @@ enable :sessions
 
 get '/' do
   session[:user] = nil
-  haml :index, locals: {message: session[:message]}
+  if session[:message]
+    message = session[:message]
+    session[:message] = nil
+  end
+  haml :index, locals: {message: message} 
 end
 
 # User registration
@@ -34,9 +46,9 @@ end
 # User authentication
 post '/login' do
   session[:message] = nil
-  auth = UserController.find_user(params[:username], params[:password])
-  if (auth)
-    session[:user] = auth
+  user = UserController.find_user(params[:username], params[:password])
+  if (user)
+    session[:user] = user
     redirect '/polls'
   else
     session[:message] = "Invalid username or password"
@@ -55,14 +67,16 @@ post '*' do
   pass
 end
 
+# Home page
 get '/polls' do
-  scores = UserController.get_results
+  users = UserController.get_results
+  poll_count = PollController.all.count
   if session[:message]
     message = session[:message]
     session[:message] = nil
-    haml :polls, locals: {user: true, admin: session[:user].admin, scores: scores, message: message}
+    haml :polls, locals: {user: true, admin: session[:user].admin, users: users, poll_count: poll_count, message: message}
   else
-    haml :polls, locals: {user: true, admin: session[:user].admin, scores: scores}
+    haml :polls, locals: {user: true, admin: session[:user].admin, users: users, poll_count: poll_count}
   end
 end
 
@@ -150,7 +164,7 @@ get '/conclude' do
   haml :conclude, locals: {user: true, admin: true, poll: poll}
 end
 
-post '/close' do
+post '/conclude' do
   PollController.conclude_poll(params)
   session[:message] = "Poll concluded!"
   redirect '/polls'

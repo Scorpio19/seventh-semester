@@ -1,15 +1,15 @@
 #polls
   %h3 All scores
-  -if locals[:scores]
+  -if locals[:users]
     %table
       %tr
         %th="User&nbsp;&nbsp;&nbsp;"
-        -locals[:scores][0].scores.count.times do |i|
-          %th="P#{i + 1}&nbsp;&nbsp;&nbsp;"
+        -locals[:poll_count].to_i.times do |i|
+          %th="M#{i + 1}&nbsp;&nbsp;&nbsp;"
         %th="Total"
-      -locals[:scores].each do |u|
+      -locals[:users].each do |u|
         %tr
           %td="#{u.name}&nbsp;&nbsp;&nbsp;"
-          -u.scores.each do |s|
-            %td=s
-          %td=u.scores.reduce(:+)
+          -u.picks.each do |p|
+            %td=p.score
+          %td=u.total_score

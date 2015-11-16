@@ -1,2 +1,7 @@
-%strong
-  Close Poll
+#polls
+  %h3 Close current Poll?
+  %form{action: "/close", method: "post"}
+    %span
+      %a{class: "btn btn-danger"}(href='/polls')
+        No
+    %input{class: "btn btn-success", type: "submit", value: "Yes"}

@@ -2,6 +2,11 @@ body {
   background-color: #BBB;
 }
 
+#message {
+  font-size: 1.5em;
+  color: #F00;
+}
+
 #wrapper {
   background-color: #FFF;
   position: absolute;

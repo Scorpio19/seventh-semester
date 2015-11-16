@@ -22,8 +22,7 @@
               %input{type: 'text', name: "b_#{i}"}
       %br
       %br
+      %span
+        %a{class: "btn btn-danger"}(href='/open')
+          Reset
       %input{class: "btn btn-success", type: "submit", value: "Create"}
-      %br
-      %br
-    %form{action: "/open", method: "get"}
-      %input{class: "btn btn-danger", type: "submit", value: "Reset"}

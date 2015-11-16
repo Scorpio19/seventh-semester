@@ -1,2 +1,19 @@
-%strong
-  Pick
+#polls
+  %h3 Make your picks
+  %form{class: "form-control", action: "/pick", method: "post"}
+    %table
+      -locals[:poll].matches.count.times do |i|
+        %tr
+          %td="Match #{i + 1}: Result?&nbsp;&nbsp;&nbsp;"
+          %td
+            %select
+              %option{value: 0}
+                Tie
+              %option{value: 1}=locals[:poll].matches[i][0]
+              %option{value: 2}=locals[:poll].matches[i][1]
+    %br
+    %br
+    %span
+      %a{class: "btn btn-danger"}(href='/open')
+        Reset
+    %input{class: "btn btn-success", type: "submit", value: "Save"}

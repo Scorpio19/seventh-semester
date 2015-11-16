@@ -10,4 +10,8 @@ class PollController
 
   def self.conclude_poll(results)
   end
+
+  def self.all
+    [1,2,3,4]
+  end
 end

@@ -1,2 +1,7 @@
-%strong
-  Conclude Poll
+#polls
+  %h3 Conclude current Poll?
+  %form{action: "/conclude", method: "post"}
+    %span
+      %a{class: "btn btn-danger"}(href='/polls')
+        No
+    %input{class: "btn btn-success", type: "submit", value: "Yes"}
