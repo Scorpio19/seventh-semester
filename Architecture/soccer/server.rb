@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'haml'
 require 'active_record'
+require 'json'
 
 ActiveRecord::Base.establish_connection(
   :adapter => 'sqlite3',
@@ -17,27 +18,30 @@ require_relative 'models/pick'
 
 enable :sessions
 
-get '/' do
-  session[:user] = nil
+def get_and_clear_message
   if session[:message]
     message = session[:message]
     session[:message] = nil
   end
-  haml :index, locals: {message: message} 
+  message
+end
+
+get '/' do
+  session[:user] = nil
+  haml :index, locals: {message: get_and_clear_message} 
 end
 
 # User registration
 get '/register' do
-  haml :register, locals: {message: session[:message]}
+  haml :register, locals: {message: get_and_clear_message}
 end
 
 post '/register' do
-  user = UserController.create_user(params[:username], params[:password])
-  unless user
+  user = UserController.register(params[:username], params[:password])
+  if user.nil? or user.id.nil?
     session[:message] = "Password or username are not valid or Username is taken."
     redirect '/register'
   else
-    session[:message] = nil
     session[:user] = user
     redirect '/polls'
   end
@@ -45,14 +49,13 @@ end
 
 # User authentication
 post '/login' do
-  session[:message] = nil
-  user = UserController.find_user(params[:username], params[:password])
-  if (user)
-    session[:user] = user
-    redirect '/polls'
-  else
+  user = UserController.login(params[:username], params[:password])
+  if user.nil? or user.id.nil?
     session[:message] = "Invalid username or password"
     redirect '/'
+  else
+    session[:user] = user
+    redirect '/polls'
   end
 end
 
@@ -69,34 +72,28 @@ end
 
 # Home page
 get '/polls' do
-  users = UserController.get_results
+  users = UserController.results
   poll_count = PollController.all.count
-  if session[:message]
-    message = session[:message]
-    session[:message] = nil
-    haml :polls, locals: {user: true, admin: session[:user].admin, users: users, poll_count: poll_count, message: message}
-  else
-    haml :polls, locals: {user: true, admin: session[:user].admin, users: users, poll_count: poll_count}
-  end
+  haml :polls, locals: {user: session[:user], admin: session[:user].admin, 
+                        users: users, poll_count: poll_count, message: get_and_clear_message}
 end
 
 # User functionality 
 get '/pick' do
-  poll = PollController.get_poll
-  if poll.status != :open
+  poll = PollController.current
+  if poll.nil? or poll.id.nil? or poll.status.to_sym != :open
     session[:message] = "Poll has been closed or has concluded. Wait for a new poll to be opened."
     redirect '/polls'
   else
-    haml :pick, locals: {user: true, admin: false, message: session[:message], poll: poll}
+    matches = PollController.matches
+    haml :pick, locals: {user: true, admin: false, message: get_and_clear_message, matches: matches}
   end
 end
 
 post '/pick' do
-  poll = PollController.get_poll
-  user = session[:user]
-  pickParams = params
-
-  PickController.create_pick(user, poll, pickParams)
+  poll = PollController.current
+  count = PollController.matches.count
+  PickController.create(session[:user].id, poll.id, count, params)
   session[:message] = "Pick saved!"
 
   redirect '/polls'
@@ -117,12 +114,12 @@ end
 
 # Open Poll
 get '/open' do
-  poll = PollController.get_poll
-  if poll.status != :concluded
+  poll = PollController.current
+  if poll.nil? or poll.id.nil? or poll.status.to_sym == :concluded
+    haml :open, locals: {user: true, admin: true, message: get_and_clear_message} 
+  else
     session[:message] = "There is already an open poll. Close and/or conclude it before opening another"
     redirect '/polls'
-  else
-    haml :open, locals: {user: true, admin: true, match_amount: session[:match_amount], message: session[:message]}
   end
 end
 
@@ -132,40 +129,54 @@ post '/open' do
   else
     session[:message] = "There must be at least 1 match"
   end
-  redirect '/open'
+  haml :open, locals: {user: true, admin: true, match_amount: session[:match_amount], 
+                       message: get_and_clear_message} 
 end
 
 post '/done' do
-  poll = PollController.create_poll(params)
-  unless poll
-    session[:message] = "One or more team names are empty"
-    redirect '/open'
-  else
+  poll = PollController.create(session[:match_amount].to_i, params)
+
+  if poll
     session[:match_amount] = nil
     session[:message] = "Poll opened!"
     redirect '/polls'
+  else
+    session[:message] = "One or more team names are empty"
+    redirect '/open'
   end
 end
 
 # Close a Poll
 get '/close' do
-  haml :close, locals: {user: true, admin: true} 
+  poll = PollController.current
+  if !poll.nil? and !poll.id.nil? and poll.status.to_sym == :open
+    haml :close, locals: {user: true, admin: true} 
+  else
+    session[:message] = "Poll has already been closed"
+    redirect '/polls'
+  end
 end
 
 post '/close' do
-  PollController.close_poll
+  PollController.close
   session[:message] = "Poll closed!"
   redirect '/polls'
 end
 
 # Conclude a Poll
 get '/conclude' do
-  poll = PollController.get_poll
-  haml :conclude, locals: {user: true, admin: true, poll: poll}
+  poll = PollController.current
+  if !poll.nil? and !poll.id.nil? and poll.status.to_sym == :closed
+    matches = PollController.matches
+    haml :conclude, locals: {user: true, admin: true, matches: matches}
+  else
+    session[:message] = "Poll has not been created or closed yet"
+    redirect '/polls'
+  end
 end
 
 post '/conclude' do
-  PollController.conclude_poll(params)
+  PollController.conclude(params)
   session[:message] = "Poll concluded!"
   redirect '/polls'
 end

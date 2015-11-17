@@ -4,12 +4,14 @@
     %table
       %tr
         %th="User&nbsp;&nbsp;&nbsp;"
-        -locals[:poll_count].to_i.times do |i|
-          %th="M#{i + 1}&nbsp;&nbsp;&nbsp;"
+        -locals[:poll_count].times do |i|
+          %th="P#{i + 1}&nbsp;&nbsp;&nbsp;"
         %th="Total"
       -locals[:users].each do |u|
         %tr
-          %td="#{u.name}&nbsp;&nbsp;&nbsp;"
+          %td="#{u.username}&nbsp;&nbsp;&nbsp;"
           -u.picks.each do |p|
             %td=p.score
+          -(locals[:poll_count] - u.picks.count).times do
+            %td=0
           %td=u.total_score

@@ -4,6 +4,8 @@ ActiveRecord::Schema.define do
       table.column :username, :string
       table.column :password, :string
       table.column :admin, :boolean
+      table.column :total_score, :integer
+      table.timestamps null: false
     end
   end
 
@@ -12,6 +14,7 @@ ActiveRecord::Schema.define do
       table.column :status, :string
       table.column :matches, :string
       table.column :results, :string
+      table.timestamps null: false
     end
   end
 
@@ -21,6 +24,7 @@ ActiveRecord::Schema.define do
       table.column :poll_id, :integer
       table.column :score, :integer
       table.column :expected, :string
+      table.timestamps null: false
     end
   end
 end
