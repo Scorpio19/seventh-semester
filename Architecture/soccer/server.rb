@@ -2,13 +2,7 @@ require 'sinatra'
 require 'haml'
 require 'active_record'
 require 'json'
-
-ActiveRecord::Base.establish_connection(
-  :adapter => 'sqlite3',
-  :database => 'soccer.db'
-)
-
-require_relative 'schema.rb'
+require_relative 'setup'
 require_relative 'controllers/user_controller'
 require_relative 'controllers/poll_controller'
 require_relative 'controllers/pick_controller'
