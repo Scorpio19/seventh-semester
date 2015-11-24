@@ -1,3 +1,10 @@
+# Final Project: Soccer Polls
+# Date: 23-Nov-2015
+# Authors:
+#   A01370815   Diego Galindez Barreda
+#   A01169999   Rodrigo Villalobos Sanchez
+#   A01165957   Saul de Nova Caballero
+
 require 'sinatra'
 require 'tilt/haml'
 require 'haml'
