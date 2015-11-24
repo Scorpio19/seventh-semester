@@ -2,19 +2,21 @@ class PollController
   def self.create(match_amount, matches)
     games = PollController.parse_matches(match_amount, matches)
     if games
-      poll = Poll.create(status: :open, matches: games, results: "")
+      poll = Polls.create(status: :open, matches: games, results: "")
     else
       false
     end
   end
 
   def self.current
-    poll = Poll.all.order("created_at desc").limit(1).to_a[0]
+    poll = Polls.all.last
   end
 
   def self.close
     poll = PollController.current
-    poll = Poll.update(poll.id, status: :closed)
+    poll.status = :closed
+    poll.save
+    poll
   end
 
   def self.conclude(games)
@@ -36,11 +38,14 @@ class PollController
       PickController.update_score(id, s)
     end
 
-    poll = Poll.update(poll.id, results: results, status: :concluded)
+    poll.results = results
+    poll.status = :concluded
+    poll.save
+    poll
   end
 
   def self.all
-    Poll.all
+    Polls.all
   end
 
   def self.matches

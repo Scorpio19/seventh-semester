@@ -1,8 +1,9 @@
 require 'sinatra'
+require 'tilt/haml'
 require 'haml'
-require 'active_record'
 require 'json'
-require_relative 'setup'
+require 'sqlite3'
+require_relative 'inactive_record'
 require_relative 'controllers/user_controller'
 require_relative 'controllers/poll_controller'
 require_relative 'controllers/pick_controller'
@@ -97,12 +98,12 @@ end
 
 # Admin authorization
 get '*' do
-  redirect '/polls' unless session[:user].admin
+  redirect '/polls' unless session[:user].admin == 't'
   pass
 end
 
 post '*' do
-  redirect '/polls' unless session[:user].admin
+  redirect '/polls' unless session[:user].admin == 't'
   pass
 end
 
@@ -110,7 +111,7 @@ end
 get '/open' do
   poll = PollController.current
   if poll.nil? or poll.id.nil? or poll.status.to_sym == :concluded
-    haml :open, locals: {user: true, admin: true, message: get_and_clear_message} 
+    haml :open, locals: {user: true, admin: session[:user].admin, message: get_and_clear_message} 
   else
     session[:message] = "There is already an open poll. Close and/or conclude it before opening another"
     redirect '/polls'
@@ -123,7 +124,7 @@ post '/open' do
   else
     session[:message] = "There must be at least 1 match"
   end
-  haml :open, locals: {user: true, admin: true, match_amount: session[:match_amount], 
+  haml :open, locals: {user: true, admin: session[:user].admin, match_amount: session[:match_amount], 
                        message: get_and_clear_message} 
 end
 
@@ -144,7 +145,7 @@ end
 get '/close' do
   poll = PollController.current
   if !poll.nil? and !poll.id.nil? and poll.status.to_sym == :open
-    haml :close, locals: {user: true, admin: true} 
+    haml :close, locals: {user: true, admin: session[:user].admin} 
   else
     session[:message] = "Poll has already been closed"
     redirect '/polls'
@@ -162,7 +163,7 @@ get '/conclude' do
   poll = PollController.current
   if !poll.nil? and !poll.id.nil? and poll.status.to_sym == :closed
     matches = PollController.matches
-    haml :conclude, locals: {user: true, admin: true, matches: matches}
+    haml :conclude, locals: {user: true, admin: session[:user].admin, matches: matches}
   else
     session[:message] = "Poll has not been created or closed yet"
     redirect '/polls'

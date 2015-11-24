@@ -5,17 +5,21 @@ class PickController
       e = selected["match_#{i}"]
       expected << e
     end
-    pick = Pick.find_by_user_id_and_poll_id(user_id, poll_id)
+    pick = Picks.find({user_id: user_id, poll_id: poll_id})[0]
     if pick.nil? or pick.expected.nil?
-      Pick.create(user_id: user_id, poll_id: poll_id, score: 0, expected: expected)
+      Picks.create(user_id: user_id, poll_id: poll_id, score: 0, expected: expected)
     else
-      Pick.update(pick.id, expected: expected)
+      pick.expected = expected
+      pick.save
+      pick
     end
   end
 
   def self.update_score(pick_id, score)
-    Pick.update(pick_id, score: score)
-    user_id = Pick.find(pick_id).user.id
+    pick = Picks.find({id: pick_id})[0]
+    pick.score = score
+    pick.save
+    user_id = pick.users.id
     UserController.update_total_score(user_id, score)
   end
 end

@@ -1,10 +1,10 @@
 class UserController
   def self.register(username, password)
-    user = User.create(username: username, password: password, admin: false, total_score: 0)
+    user = Users.create(username: username, password: password, admin: false, total_score: 0)
   end
 
   def self.login(username, password)
-    user = User.find_by_username(username)
+    user = Users.find({username: username})[0]
     if user.nil? or user.password != password
       nil
     else
@@ -13,13 +13,14 @@ class UserController
   end
 
   def self.results
-    results = User.all
-
-    results.select {|u| !u.admin}.sort_by{|u| u.total_score}.reverse
+    results = Users.all
+    results.select{|u| u.admin != 't'}.sort_by{|u| u.total_score}.reverse
+    results
   end
   
   def self.update_total_score(user_id, score)
-    user = User.find(user_id)
-    User.update(user_id, total_score: user.total_score + score)
+    user = Users.find({id: user_id})[0]
+    user.total_score += score
+    user.save
   end
 end

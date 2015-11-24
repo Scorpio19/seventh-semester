@@ -14,7 +14,7 @@
           %a(href='/polls')
             Home
           %ul
-            -if locals[:admin]
+            -if locals[:admin] == 't'
               %li
                 %a(href='/open')
                   Open Poll
