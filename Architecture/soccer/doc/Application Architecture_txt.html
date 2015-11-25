@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>Application Architecture - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "./";
+</script>
+
+<script src="./js/jquery.js"></script>
+<script src="./js/darkfish.js"></script>
+
+<link href="./css/fonts.css" rel="stylesheet">
+<link href="./css/rdoc.css" rel="stylesheet">
+
+
+
+<body id="top" role="document" class="file">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="./index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="./table_of_contents.html#pages">Pages</a>
+    <a href="./table_of_contents.html#classes">Classes</a>
+    <a href="./table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search" spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+<div class="nav-section">
+  <h3>Table of Contents</h3>
+
+  <ul class="link-list" role="directory">
+    <li><a href="#label-Application+Architecture">Application Architecture</a>
+    <li><a href="#label-Class+Diagrams">Class Diagrams</a>
+    <li><a href="#label-Deployment+Diagram">Deployment Diagram</a>
+    <li><a href="#label-Entity+Relationship+Diagram">Entity Relationship Diagram</a>
+    <li><a href="#label-Patterns+Used">Patterns Used</a>
+    <li><a href="#label-Bibliography">Bibliography</a>
+  </ul>
+</div>
+
+
+  <div id="project-metadata">
+    <div id="fileindex-section" class="nav-section">
+  <h3>Pages</h3>
+
+  <ul class="link-list">
+  
+    <li><a href="./Application Architecture_txt.html">Application Architecture</a>
+  
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-label="Page Application Architecture.txt">
+
+<h1 id="label-Application+Architecture">Application Architecture<span><a href="#label-Application+Architecture">&para;</a> <a href="#top">&uarr;</a></span></h1>
+
+<p>Here we present the general Architecture for our <em>Soccer</em>
+<em>Poll</em>. It follows an MVC architecture. The <em>Soccer</em>
+<em>Poll</em> application allows for new users to register, any user can
+log in and normal users can make picks on the currently open poll. All
+users can see everyone&#39;s score. The Administrative users can open,
+close and conclude polls and cannot make any picks. They can only have one
+poll active at a time, this means that until a poll is concluded, no other
+poll may be opened.</p>
+
+<p>The directory structure for the application and its documentation is as
+follows:</p>
+
+<pre>soccer/
+      ├─ doc/                    (produced by RDoc)
+      ├─ controllers/            (the application&#39;s controller files)
+      ├─ public/                 (folder for the server&#39;s public documents)
+              └─ stylesheets/    (CSS files)
+              └─ fonts/          (font files)
+              └─ js/             (JS files)
+      ├─ models/                 (the application&#39;s model files)
+      └─ views/                  (the application&#39;s view files, with haml)</pre>
+
+<h2 id="label-Class+Diagrams">Class Diagrams<span><a href="#label-Class+Diagrams">&para;</a> <a href="#top">&uarr;</a></span></h2>
+
+<p>The following figure represents the class diagram for both our models,
+controllers and <em>Active</em> <em>Record</em> implementation used in the
+<em>Soccer</em> <em>Poll</em> web application:</p>
+
+<p><img src="images/class_diagram.png" /></p>
+
+<p>It is fairly straightforward, the <em>dispatch</em> arrows are placed to
+show coordination between the modules, through message passing.</p>
+
+<h2 id="label-Deployment+Diagram">Deployment Diagram<span><a href="#label-Deployment+Diagram">&para;</a> <a href="#top">&uarr;</a></span></h2>
+
+<p>Here we present the general deployment diagram for our application:</p>
+
+<p><img src="images/deployment_diagram.png" /></p>
+
+<h2 id="label-Entity+Relationship+Diagram">Entity Relationship Diagram<span><a href="#label-Entity+Relationship+Diagram">&para;</a> <a href="#top">&uarr;</a></span></h2>
+
+<p>Here we present the ER Diagram for our tables, which shows how the
+different models relate to each other.</p>
+
+<p><img src="images/ER.png" /></p>
+
+<h2 id="label-Patterns+Used">Patterns Used<span><a href="#label-Patterns+Used">&para;</a> <a href="#top">&uarr;</a></span></h2>
+
+<p>The following patterns where used for our application:</p>
+<ul><li>
+<p><strong>Model-View-Controller</strong>: The application follows the web
+implementation of the MVC architectural pattern. The models, controllers
+(<code>.rb</code> files) and views (<code>.haml</code> files) are stored in
+the corresponding <code>models</code>, <code>controllers</code> and
+<code>views</code> directory. The <code>server.rb</code> file works as a
+way of syncing controllers with views and matching routes to their adequate
+functionality.</p>
+</li><li>
+<p><strong>Active Record</strong>: The application has its own implementation
+of the <em>Active</em> <em>Record</em> pattern, which handles all the
+specifics of queries to a database, using sql. By many this may not be
+considered a valid pattern, since it breaks the Single Purpose principle,
+but we still consider it one.</p>
+</li><li>
+<p><strong>Singleton</strong>: Our controller classes act like singletons,
+since we actually have no instances of them. It is not forbidden to create
+instances of them, but the application doesn&#39;t do so.</p>
+</li><li>
+<p><strong>DSL</strong>: The use of sinatra for the server naturally implies
+the application of a DSL pattern.</p>
+</li></ul>
+
+<h2 id="label-Bibliography">Bibliography<span><a href="#label-Bibliography">&para;</a> <a href="#top">&uarr;</a></span></h2>
+<ul><li>
+<p>Brown, G. (2012, June 12). Implementing the Active Record pattern, Part 1 -
+Issue 4.8. Retrieved November 25, 2015, from <a
+href="https://practicingruby.com/articles/implementing-the-active-record-pattern-1">practicingruby.com/articles/implementing-the-active-record-pattern-1</a></p>
+</li><li>
+<p>Ruby. (n.d.). Retrieved November 25, 2015, from <a
+href="http://apidock.com/ruby">apidock.com/ruby</a></p>
+</li><li>
+<p>Draw.io - free flow chart maker and diagrams online. (n.d.). Retrieved
+November 25, 2015, from <a href="https://www.draw.io">www.draw.io</a>/</p>
+</li></ul>
+</main>
+
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="http://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="http://docs.seattlerb.org/rdoc/">RDoc</a> 4.2.0.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+

@@ -20,6 +20,9 @@ require_relative 'models/pick'
 
 enable :sessions
 
+# Helper method to obtain the message stored in
+# session and clear it, so messages are only shown
+# once.
 def get_and_clear_message
   if session[:message]
     message = session[:message]

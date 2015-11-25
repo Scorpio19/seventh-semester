@@ -1,43 +1,66 @@
 = Application Architecture
 
-We explain here how to write the documentation for your final project. As an example, we provide a simple _Greeter_ web application which is just a glorified version of the classical <em>Hello World</em> program but running on the web and producing results in different natural languages.
+Here we present the general Architecture for our _Soccer_ _Poll_. It follows an MVC
+architecture.
+The _Soccer_ _Poll_ application allows for new users to register, any user can log
+in and normal users can make picks on the currently open poll. All users can see
+everyone's score.
+The Administrative users can open, close and conclude polls and cannot make any
+picks. They can only have one poll active at a time, this means that until a
+poll is concluded, no other poll may be opened.
 
 The directory structure for the application and its documentation is as follows:
 
-   greeter/
+   soccer/
          ├─ doc/                    (produced by RDoc)
+         ├─ controllers/            (the application's controller files)
          ├─ public/                 (folder for the server's public documents)
                  └─ stylesheets/    (CSS files)
+                 └─ fonts/          (font files)
+                 └─ js/             (JS files)
          ├─ models/                 (the application's model files)
-         └─ views/                  (the application's view files)         
-
-This is the command used to produce this documentation (running it from the +greeter+ directory):
-
-  rdoc --main "root/Application Architecture.txt" --exclude ".json|.css" root
+         └─ views/                  (the application's view files, with haml)
 
 == Class Diagrams
 
-The following figure represents the class diagram for the models used in the _Greeter_ web application:
+The following figure represents the class diagram for both our models,
+controllers and _Active_ _Record_ implementation used in the _Soccer_ _Poll_ web
+application:
 
-link:doc/images/class_diagram.png
+link:images/class_diagram.png
 
-You can include as many of these diagrams as you consider necessary. Note that you only need to specify the names of the classes and their relationships. You don't need to include attributes or method names in these diagrams.
-
-To include an image in this document, copy it in the +doc/images+ directory and refer it as: +link:doc/images/image_name.png+.
+It is fairly straightforward, the _dispatch_ arrows are placed to show
+coordination between the modules, through message passing.
 
 == Deployment Diagram
 
-Deployment diagrams show a system's physical layout, revealing which pieces of software run on what pieces of hardware. This is the deployment diagram for our application.
+Here we present the general deployment diagram for our application:
 
-link:doc/images/deployment_diagram.png
+link:images/deployment_diagram.png
+
+== Entity Relationship Diagram
+
+Here we present the ER Diagram for our tables, which shows how the different
+models relate to each other.
+
+link:images/ER.png
 
 == Patterns Used
 
-Briefly mention all the patterns that your application uses and identify where exactly. In our example, the following pattern are clearly used:
+The following patterns where used for our application:
 
-- <b>Simple Factory Pattern</b>: The +GreeterFactory+ is used to create +Greeter+ instances by specifying the desired language during its creation.
-- <b>Model-View-Controller</b>: The application follows the classical web implementation of the MVC architectural pattern. The models (+.rb+ files) and views (+.erb+ files) are stored in the corresponding +models+ and +views+ directory. The controller is contained in +server.rb+ file.
+- <b>Model-View-Controller</b>: The application follows the web implementation of the MVC architectural pattern. The models, controllers (+.rb+ files) and views (+.haml+ files) are stored in the corresponding +models+, +controllers+ and +views+ directory. The +server.rb+ file works as a way of syncing controllers with views and matching routes to their adequate functionality.
+
+- <b>Active Record</b>: The application has its own implementation of the _Active_ _Record_ pattern, which handles all the specifics of queries to a database, using sql. By many this may not be considered a valid pattern, since it breaks the Single Purpose principle, but we still consider it one.
+
+- <b>Singleton</b>: Our controller classes act like singletons, since we actually have no instances of them. It is not forbidden to create instances of them, but the application doesn't do so.
+
+- <b>DSL</b>: The use of sinatra for the server naturally implies the application of a DSL pattern.
 
 == Bibliography
 
-Mention here any consulted books or web pages.
+- Brown, G. (2012, June 12). Implementing the Active Record pattern, Part 1 - Issue 4.8. Retrieved November 25, 2015, from https://practicingruby.com/articles/implementing-the-active-record-pattern-1
+
+- Ruby. (n.d.). Retrieved November 25, 2015, from http://apidock.com/ruby
+
+- Draw.io - free flow chart maker and diagrams online. (n.d.). Retrieved November 25, 2015, from https://www.draw.io/
