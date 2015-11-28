@@ -48,9 +48,10 @@ public class LoginServlet extends HttpServlet {
                 ResultSet users = dbStatement2.executeQuery(query2);
                 ArrayList<String> userList = new ArrayList<String>();
                 while (users.next()) {
-                    userList.add(users.getString(1));
+                    userList.add(users.getString(1));                    
                 }
                 if (!result.next()) {
+                    System.out.println("Rejected: "+username);
                     request.setAttribute("error", "Invalid username or password");
                     request.getRequestDispatcher("/index.jsp").forward(request, response);
                 } else {
@@ -60,7 +61,7 @@ public class LoginServlet extends HttpServlet {
                     request.setAttribute("password", password);
                     request.getRequestDispatcher("/StatusServlet").forward(request, response);
                 }
-            } catch  (Exception e) {
+            } catch  (Exception e) {                
                 request.setAttribute("error", e.getCause());
                 request.getRequestDispatcher("/index.jsp").forward(request, response);
             }

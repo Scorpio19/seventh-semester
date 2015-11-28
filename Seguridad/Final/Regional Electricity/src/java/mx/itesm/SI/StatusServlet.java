@@ -45,6 +45,8 @@ public class StatusServlet extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             
+            System.out.println("Authenticated user: "+username);
+            
             while (result.next()) {
                 String[] row = new String[4];
                 for (int i = 0; i < 4; i++) {
