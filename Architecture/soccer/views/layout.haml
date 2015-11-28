@@ -1,0 +1,46 @@
+!!!
+%html
+  %head
+    %title Soccer Polls
+    %link(rel="stylesheet" href="css/bootstrap.min.css")
+    %link(rel="stylesheet" href="css/bootstrap-theme.min.css")
+    %link(rel="stylesheet" href="css/style.css")
+    %link(rel="javascript" href="js/bootstrap.min.js")
+    %link(rel="javascript" href="js/npm.js")
+  %body
+    #wrapper
+      -if locals[:user]
+        #side_bar
+          %a(href='/polls')
+            Home
+          %ul
+            -if locals[:admin] == 't'
+              %li
+                %a(href='/open')
+                  Open Poll
+              %li
+                %a(href='/close')
+                  Close Poll
+              %li
+                %a(href='/conclude')
+                  Conclude Poll
+            -else
+              %li
+                %a(href='/pick')
+                  Make picks
+            %li
+              %a(href='/')
+                Log out
+      #header
+        %h1 Soccer Polls
+        %h3 A Simple website for the Software Design and Architecture course.
+        -if locals[:message]
+          #message
+            %p=locals[:message]
+
+      #content
+        =yield
+ 
+      #footer
+        %p
+          ITESM CEM, Software Design and Architecture, 2015 &copy

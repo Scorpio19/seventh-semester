@@ -1,0 +1,22 @@
+#polls
+  %h3 Make your picks
+  %p
+    Fill in the results you expect for the current poll
+  %br
+  %br
+  %form{class: "form-control", action: "/pick", method: "post"}
+    %table
+      -locals[:matches].each_with_index do |m, i|
+        %tr
+          %td="Match #{i + 1}: Result?&nbsp;&nbsp;&nbsp;"
+          %td
+            %select{name: "match_#{i}"}
+              %option{value: 0}="Tie"
+              %option{value: 1}=m[0]
+              %option{value: 2}=m[1]
+    %br
+    %br
+    %span
+      %a{class: "btn btn-danger"}(href='/pick')
+        Reset
+    %input{class: "btn btn-success", type: "submit", value: "Save"}

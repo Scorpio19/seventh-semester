@@ -1,0 +1,123 @@
+= Práctica #10: Resolviendo problemas con Java Streams
+:author: Diego Galíndez Barreda (A01370815), Eduardo Fagzuri Gaytán Martinez (A01165988)
+:lang: es
+:email: dgalindez1@gmail.com, A01165988@itesm.mx 
+:encoding: utf-8
+:revdate: 20 de noviembre, 2015.
+:source-highlighter: coderay
+:numbered:
+
+Este reporte fue elaborado para el curso de _Programación multinúcleo_ del Tecnológico de Monterrey, Campus Estado de México.  
+
+:numbered:
+
+== Introducción
+Durante la práctica se utilizan las instrucciones SIMD para realizar disolución
+alpha, así como la ejecución normal en C.
+La implementación de este problema se hace de forma secuencial usando solamente
+C y la paralela usando las instrucciones SIMD. Esto requiere que usemos algo de
+código de ensamblador.
+
+[NOTE]
+.Hardware y software utilizado
+=============================
+Los programas se probaron en una laptop con las siguientes características:
+
+- Procesador Intel Core i5-4200U de 1.60GHz con dos núcleos y cuatro hyperthreads.
+- 5.7 GiB de memoria RAM.
+- Sistema operativo Ubuntu 14.04, kernel de Linux 3.19.0-25 de 64 bits.
+- Compilador GCC (Ubuntu 5.2.1-22ubuntu2) 5.2.1 20151010
+- NASM version 2.11.05 compiled Nov 12 2014
+=============================
+
+== Solución disolución alpha
+En este caso,, se integró tanto la solución secuencial como la paralela en el
+mismo archivo. Sin embargo, la solución paralela depende de la implementación de
+la función __simd_alpha__ que es escrita en ensamblador con instrucciones SIMD.
+
+A continuación, se anexa el código fuente del programa:
+
+[source, c]
+----------------------------
+include::main.c[]
+----------------------------
+
+Aquí se presenta el código fuente de ensamblador de la solución paralela usando
+instrucciones SIMD:
+
+[source, asm]
+----------------------------
+include::simd_alpha.asm[]
+----------------------------
+
+El programa lee los archivos __scarlett.png__ y __flores.png__ y sobre estos
+realiza la disolución alpha, usando como valor para alpha el valor que se envía
+al ejecutar el programa.
+Ambos archivos son de un tamaño considerable y miden lo mismo, de forma que se
+simplifica la implementación del programa. Además, su tamaño es exactamente
+divisible entre 8, de forma que podemos, de forma más simple, hacer la
+disolución allpha sin preocuparnos por espacios sobrantes de memoria.
+
+El programa nos indica el valor de alpha usado, así como el tiempo secuencial,
+el tiempo paralelo (instrucciones SIMD) y el speedup de esta corrida.
+A continuación está la salida del programa:
+
+[source,text]
+----------------------------
+Alpha used: 155
+Sequential Time: 0.497591
+SIMD Time: 0.018428
+Speedup: 27.002291
+----------------------------
+
+Para ninguno de los dos casos se toma en cuenta el tiempo de lectura de las
+imágenes, escritura o inicialización de variables, ya que la lectura y escritura
+de las imágenes consumen un tiempo considerable y no son implementadas dentro
+del programa, se hace uso de una biblioteca externa.
+
+== Resultados de las soluciones de Montecarlo
+A continuación mostramos varias corridas de ambos programas:
+
+.Tiempos de ejecución de la solución secuencial 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~1~ (segundos)
+| 1                | 0.4749
+| 2                | 0.4707
+| 3                | 0.4724
+| 4                | 0.5512
+| 5                | 0.4765
+| Media aritmética | 0.4891
+|=======================
+
+.Tiempos de ejecución de la solución en paralelo 
+[options="header,footer", cols="^,^", width="70%"]
+|=======================
+| # de corrida     | Tiempo T~2~ (segundos)
+| 1                | 0.0200
+| 2                | 0.0186
+| 3                | 0.0193
+| 4                | 0.0193
+| 5                | 0.0185
+| Media aritmética | 0.0191
+|=======================
+
+El speedup es de: 25.6X
+
+Se puede observar un aumento muy significativo en la ejecución con instrucciones
+SIMD y obtenemos el mismo resultado. Esto se puede deber en gran parte a que,
+sin importrar que, si el código en ensamblador está correctamente implementado,
+va a ser considerablemente más rápido que el código en C. De hecho, se puede
+observar una diferencia mucho menor si se activan las opciones de optimización
+de GCC para nuestro programa.
+
+Pese a ello, se puede argumentar que las instrucciones SIMD siguen siendo
+superiores, ya que las optimizaciones tienden a convertir el código usado en
+instrucciones como estas. Aún con esto, la implementación propia sigue siendo
+más rápida, ya que el código de ensamblador solo contiene las instrucciones
+necesarias y nada más y el compilador probablemente use más instrucciones.
+
+En un principio podría parecer que realizar una implementación en ensamblador
+resultaría considerablemente más complejo, sin embargo, las instrucciones usadas
+tienden a abarcar una buena parte de lo que se requiere hacer de froma
+inmediata, lo que simplifica mucho nuestro trabajo.

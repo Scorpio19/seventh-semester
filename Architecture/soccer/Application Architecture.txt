@@ -1,0 +1,66 @@
+= Application Architecture
+
+Here we present the general Architecture for our _Soccer_ _Poll_. It follows an MVC
+architecture.
+The _Soccer_ _Poll_ application allows for new users to register, any user can log
+in and normal users can make picks on the currently open poll. All users can see
+everyone's score.
+The Administrative users can open, close and conclude polls and cannot make any
+picks. They can only have one poll active at a time, this means that until a
+poll is concluded, no other poll may be opened.
+
+The directory structure for the application and its documentation is as follows:
+
+   soccer/
+         ├─ doc/                    (produced by RDoc)
+         ├─ controllers/            (the application's controller files)
+         ├─ public/                 (folder for the server's public documents)
+                 └─ stylesheets/    (CSS files)
+                 └─ fonts/          (font files)
+                 └─ js/             (JS files)
+         ├─ models/                 (the application's model files)
+         └─ views/                  (the application's view files, with haml)
+
+== Class Diagrams
+
+The following figure represents the class diagram for both our models,
+controllers and _Active_ _Record_ implementation used in the _Soccer_ _Poll_ web
+application:
+
+link:images/class_diagram.png
+
+It is fairly straightforward, the _dispatch_ arrows are placed to show
+coordination between the modules, through message passing.
+
+== Deployment Diagram
+
+Here we present the general deployment diagram for our application:
+
+link:images/deployment_diagram.png
+
+== Entity Relationship Diagram
+
+Here we present the ER Diagram for our tables, which shows how the different
+models relate to each other.
+
+link:images/ER.png
+
+== Patterns Used
+
+The following patterns where used for our application:
+
+- <b>Model-View-Controller</b>: The application follows the web implementation of the MVC architectural pattern. The models, controllers (+.rb+ files) and views (+.haml+ files) are stored in the corresponding +models+, +controllers+ and +views+ directory. The +server.rb+ file works as a way of syncing controllers with views and matching routes to their adequate functionality.
+
+- <b>Active Record</b>: The application has its own implementation of the _Active_ _Record_ pattern, which handles all the specifics of queries to a database, using sql. By many this may not be considered a valid pattern, since it breaks the Single Purpose principle, but we still consider it one.
+
+- <b>Singleton</b>: Our controller classes act like singletons, since we actually have no instances of them. It is not forbidden to create instances of them, but the application doesn't do so.
+
+- <b>DSL</b>: The use of sinatra for the server naturally implies the application of a DSL pattern.
+
+== Bibliography
+
+- Brown, G. (2012, June 12). Implementing the Active Record pattern, Part 1 - Issue 4.8. Retrieved November 25, 2015, from https://practicingruby.com/articles/implementing-the-active-record-pattern-1
+
+- Ruby. (n.d.). Retrieved November 25, 2015, from http://apidock.com/ruby
+
+- Draw.io - free flow chart maker and diagrams online. (n.d.). Retrieved November 25, 2015, from https://www.draw.io/

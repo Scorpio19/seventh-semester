@@ -1,0 +1,902 @@
+%%%
+%%%
+%%% Plantilla para artílo de Programacióultinú
+%%%
+%%% FAVOR DE NO CAMBIAR FUENTES, MÁGENES, ETC.
+%%%
+
+\documentclass[10pt,letterpaper,oneside]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{endnotes}
+\usepackage{epsfig}
+\usepackage{mathtools}
+\usepackage{gauss}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\usepackage[spanish,mexico]{babel}
+
+\begin{document}
+
+\renewcommand\abstractname{Resumen}
+\renewcommand\refname{Referencias}
+\renewcommand{\notesname}{Notas}
+
+\title{Programacióultinú: Inversióe Matrices}
+\author{
+\Large Diego Galíez Barreda (A01370815)
+\\
+Tecnolóo de Monterrey, Campus Estado de Méco
+\\  
+\Large \textit{A01370815@itesm.mx}}  
+
+\maketitle
+
+\begin{abstract}
+Este documento, escrito en \LaTeX, presenta un artílo de investigacióobre la implementacióe una inversióe matrices por médo de gauss jordan sin el uso de pivotes, para la materia de \textit{Programacióultinú} del Instituto Tecnolóo de Estudios Superiores de Monterrey, Campus Estado de Méco. 
+\end{abstract}
+
+\section{Resumen}
+
+El presente trabajo se basa en una implementacióe la inversióe una matriz por el médo de Gauss Jordan~\cite{algoritmo}, sin usar pivotes.
+
+Se busca demostrar las ventajas de las implementaciones de algoritmos que funcionan en paralelo en los diferentes paradigmas de sincronizaciósados. 
+
+En este caso se demuestran las diferencias con paso de mensajes y memoria compartida.
+
+Para llevar a cabo la comparacióe tiempos, se realizó algoritmo de forma secuencial y a continuacióde forma concurrente. Ademá por cada algoritmo se realizaron varias corridas para poder determinar un promedio y calcular el \emph{speedup} del sistema implementado de forma concurrente contra el secuencial.
+
+Los lenguajes y tecnologí usadas para ellos fueron:
+
+\begin{itemize}
+    \item \textit{Web Workers} en JavaScript
+    \item \textit{Streams} paralelos en Java 8
+    \item Procesos en Erlang
+\end{itemize}
+
+Durante el presente artílo se determina que, para el caso particular de este algoritmo, los sistemas de memoria compartida resultan máeficientes que los de paso de mensajes.
+
+Ademá con este algoritmo, se puede ver claramente la influencia de la Ley de Amdahl~\cite{amdahl}, ya que no toda la parte computacionalmente costosa es paralelizable, lo cual limita el aumento en velocidad que se llega a obtener.
+
+Finalmente, se concluyen las ventajas y desventajas ante diferentes algoritmos dentro de los sistemas concurrentes y se destaca la importancia del conocimiento y entendimiento del desarrollo concurrente hoy en dípara aprovechar las tecnologí actuales.
+    
+\section{Introducció
+Durante el presente trabajo se llevócabo una inversióe matrices por el médo de Gauss Jordan sin pivotes. A continuacióe explica a detalle el funcionamiento báco del algoritmo asíomo señr las partes del mismo que pueden ser implementadas de forma paralela.
+
+En un principio, se aumenta la matriz original con la matriz identidad de su mismo tamañde forma que se obtiene una matriz de $N\times2N$.~\cite{algoritmo}
+
+Matriz original:
+
+$
+\begin{gmatrix}
+a_{00}&a_{01}&\ldots&a_{0N} \\
+a_{10}&a_{11}&\ldots&a_{1N} \\
+\vdots \\
+\vdots \\
+\vdots \\
+a_{N0}&a_{N1}&\ldots&a_{NN} \\
+\end{gmatrix}
+$
+
+Matriz extendida:
+
+$
+\begin{gmatrix}
+a_{00}&a_{01}&\ldots&a_{0N}&1&0&\ldots&0_{0,2N} \\
+a_{10}&a_{11}&\ldots&a_{1N}&0&1&\ldots&0_{0,2N} \\
+\vdots \\
+\vdots \\
+\vdots \\
+a_{N0}&a_{N1}&\ldots&a_{NN}&0&0&\ldots&1_{0,2N} \\
+\end{gmatrix}
+$
+
+En el médo de eliminacióaussiana, se buscan los pivotes por cada renglólos cuales son indicados por el valor máalto de la columna sobre la que se estáterando. Una vez encontrados los pivotes, se invierte el orden del renglón el cual se encontró pivote por el renglógual a la columna sobre la que se estáterando.
+
+Pivote en la fila 2, revisando la columna 0:
+
+$
+\begin{gmatrix}
+a_{00}&a_{01}&\ldots&a_{0N} \\
+a_{10}&a_{11}&\ldots&a_{1N} \\
+a_{20}&a_{21}&\ldots&a_{2N} \\
+\vdots \\
+\vdots \\
+a_{N0}&a_{N1}&\ldots&a_{NN} \\
+\rowops
+\swap {0}{2}
+\end{gmatrix}
+$
+
+Por cada cambio que se realice, se debe guardar el cambio que se hizo, ya que estos provocan diferentes transformaciones sobre la matriz.
+Despuéde esto se realizan operaciones de renglóobre la matriz de forma tal que quede en forma triangular superior, esto es, que los valores debajo de la diagonal principal sean todos ceros.
+
+Matriz en forma triangular superior:
+
+$
+\begin{gmatrix}
+a_{00}&a_{01}&\ldots&a_{0N} \\
+0&a_{11}&\ldots&a_{1N} \\
+0&0&\ldots&a_{2N} \\
+\vdots \\
+\vdots \\
+0&0&\ldots&a_{NN} \\
+\end{gmatrix}
+$
+
+La alternativa a esta opcióes el médo de Gauss Jordan, que consiste en hacer que la matriz original termine como la identidad. Esto se consigue haciendo sustitución reversa sobre la parte superior a la diagonal, de forma que se consigue que todos estos valores sean 0.
+
+Matriz reducida:
+
+$
+\begin{gmatrix}
+a_{00}&0&\ldots&0_{0N} \\
+0&a_{11}&\ldots&0_{1N} \\
+0&0&\ldots&0_{2N} \\
+\vdots \\
+\vdots \\
+0&0&\ldots&a_{NN} \\
+\end{gmatrix}
+$
+
+Finalmente, se debe garantizar que los valores de la diagonal sean 1. Todas las transformaciones realizadas sobre la matriz se llevan a cabo tambiésobre la identidad. Esto implica que los valores de la identidad son los valores que deberáener la matriz invertida al finalizar el algoritmo.
+
+Una alternativa a este médo, radica en evitar los pivotes. Esto se puede hacer simplemente dividiendo cada renglóntre el valor que deberíquedar en su diagonal, \verb!a_{ii}!. Esto provoca que por definiciótodos los valores de la diagonal queden en 1 y se simplifica ampliamente el proceso.
+
+Considerando los factores anteriormente expuestos, se pueden observar dos aspectos importantes: las oportunidades de paralelismo y la diferencia entre el uso de pivotes y su ausencia.
+
+Primero que nada, podemos observar que existen varias oportunidades para realizar el algoritmo de forma paralela: la generacióe la matriz identidad y su unió la matriz base, las operaciones de renglóara obtener las escalas y la sustitución reversa. Sin embargo, todas estas requieren que los valores sean colocados en la matriz y resulta importante garantizar que al realizar este paso no se presenten condiciones de carrera, ya que es posible que dos diferentes hilos intenten escribir el mismo valor.
+
+Por otra parte, es importante destacar que la ausencia de pivotes, aunque agrega mápasos de computaciól algoritmo, a la larga evita que se tengan que hacer máoperaciones, ya que se tiene garantizado el que todos los valores de la diagonal son la unidad y por lo mismo no requerimos mantener una lista de cambios en los renglones y las transformaciones que estos cambios de lugar de cada renglórovocarí.
+
+El realizar la divisióe cada renglóntre el valor de su diagonal es $O(N)$, ya que solamente se tiene que recorrer la matriz en una dimensió solamente se realiza una vez. Por otra parte, la búda de pivotes, asumiendo que se haga de forma binaria, toma $O(N\log{}N)$, ya que cada búda tomarí$O(\log{}N)$ y se tendríque hacer una búda por cada renglóAunado a esto, se tiene que considerar la memoria extra para almacenar las operaciones y el tiempo que tome hacer el cambio de renglólo cual dependeríde la implementacióarticular.
+
+Por lo estipulado anteriormente, se decidióar la eliminacióe GaussJordan sin pivotes, de forma que se pueda aprovechar en la mayor medida posible la paralelizació
+Se pudo determinar que las áas donde se puede aprovechar principalmente la paralelizacióon: la creacióe la matriz de identidad y su unió la matriz original, las escalas de cada renglóara crear la diagonal y la sustitución reversa de las escalas obtenidas. Resulta de gran importancia realizarlo de la forma correcta y asegurarse de que no van a existir condiciones de carrera en los sistemas de memoria compartida.
+
+\section{Desarrollo}
+
+Para realizar las comparaciones de este algoritmo, se utilizaron las siguientes tecnologí:
+
+\begin{itemize}
+    \item \textit{Web Workers} en JavaScript
+    \item \textit{Streams} paralelos en Java 8
+    \item Procesos en Erlang
+\end{itemize}
+
+En cada uno de estos se realizó implementacióecuencial y concurrente del algoritmo. Para poder realizar una comparacióntre estos, se llevaron a cabo 5 corridas de cada programa, por cada una de las implementaciones. De estas se obtuvo un promedio y se calculó \emph{speedup} para cada una de las tres implementaciones. Esto nos permite comprar las ventajas de cada lenguaje independientemente de su velocidad natural.
+
+Se adaptaron los tamañusados para la matriz para cada lenguaje, ya que en algunas de las implementaciones no era viable usar matrices de cierto tamañAunado a ello, cada una de las implementaciones comienza generando una matriz con nús aleatorios que se usaráanto para el caso secuencial como el paralelo. Esto garantiza que sean la misma cantidad de operaciones independientemente de la versióue se estésando.
+
+Las especificaciones téicas del equipo utilizado para estos fines son:
+
+\begin{itemize}
+    \item \textit Procesador Intel Core i5-4200U de 1.60GHz con dos nús y cuatro hyperthreads.
+    \item \textit 5.7 GiB de memoria RAM.
+    \item \textit Sistema operativo Windows 8.1, de 64 bits.
+    \item \textit Navegador Mozilla Firefox 40.0.3.
+    \item \textit Compilador Java 1.8.0\_51 de Oracle.
+    \item \textit Erlang/OTP 18 [erts-7.0] de 64 bits.
+\end{itemize}
+
+
+Primero que nada, se llevo acabo la implementacióel algoritmo en \verb!JavaScript!. En un principio se hizo el algoritmo secuencial sin considerar su paralelizacióEste se usómo base para la implementacióaralela.
+
+Se crearon dos \verb!WebWorkers! diferentes para realizar la versióaralela. El primero de estos se encargaba de crear la matriz de identidad del tamañe la matriz generada y agregarla a la matriz original. Dentro del programa principal se obteníla informacióue generaba este hilo y se juntaba a la matriz real. Esto era necesario debido a que este es un sistema de paso de mensaje, no de memoria compartida.
+
+A continuacióe realiza como tal el algoritmo de GaussJordan. Como se mencionóteriormente, en este proceso se puede paralelizar el obtener las escalas y la sustitución reversa de los valores. Esto se realizóntro de un mismo \verb!WebWorker! que, de acuerdo a la informacióue recibíen los mensajes, determinaba si correspondíobtener las escalas o realizar la sustitució
+Para esta implementacióe usóa matriz de $150\times150$ y 4 \verb!WebWorkers! en la versióoncurrente y solamente 1 \verb!WebWorker! para la versióecuencial. Los resultados de esta implementacióe muestran a continuació
+\begin{center}
+
+    Resultados de la ejecucióecuencial:
+    
+    \begin{tabular}{|r|r|}
+    \hline
+    \hline
+    \# Corrida & Tiempo (segundos)  \\
+    \hline
+    \hline
+    1 & 4.91 \\
+    2 & 4.51 \\
+    3 & 5.08 \\
+    4 & 4.66 \\
+    5 & 4.95 \\
+    \hline
+    \end{tabular}
+    
+    Promedio: 4.82 segundos\\
+    \medskip
+    \medskip
+    \medskip
+    Resultados de la ejecucióoncurrente:
+    
+    \begin{tabular}{|r|r|}
+    \hline
+    \hline
+    \# Corrida & Tiempo (segundos)  \\
+    \hline
+    \hline
+    1 & 5.96 \\
+    2 & 5.97 \\
+    3 & 5.83 \\
+    4 & 5.95 \\
+    5 & 5.81 \\
+    \hline
+    \end{tabular}
+    
+    Promedio: 5.90 segundos
+    \medskip
+    \medskip
+    \medskip
+    Speedup: 0.81X
+    
+\end{center}
+
+Como se puede observar, la implementacióaralela resulta málenta que la secuencial, a pesar de que se buscóslar la parte mácomputacionalmente costosa dentro de la parte paralelizada. Esto es debido a que, al ser un modelo de memoria compartida, es necesario colocar la informacióbtenida del mensaje dentro de la matriz original. Esto resulta en un gran problema, ya que, a pesar de que se aía el cáulo a los hilos creados, sigue siendo necesario iterar sobre los valores obtenidos. Si a esto se agrega el costo generado por el paso de los mensajes a los \verb!WebWorkers!, termina resultando mácostosa la implementacióaralela.
+
+Al presentarse un \emph{speedup} negativo menor a 1 podemos determinar que de hecho no existe un \emph{speedup}, se pierde velocidad. Si a esto se agrega la complejidad de la implementación paralelo en comparacióon la secuencial es claro que no es conveniente implementar este algoritmo con \verb!JavaScript!.
+
+La siguiente implementacióealizada fue la de \verb!Java!, usando \verb!Streams! para la concurrencia. Se decidióar esta tecnologíen particular, porque simplifica la paralelizacióe ciclos o funciones recursivas de forma significativa.
+
+De la misma manera que con la implementacióe \verb!JavaScript!, se inición la versióecuencial del algoritmo. En este caso se conservó versióecuencial para poder realizar las comparaciones, ya que los \verb!Streams! aían la paralelizació no se podríusar la misma lóa que en el caso anterior.
+
+Despuéde realizar la versióecuencial se buscóralelizarla. Esto resultóy sencillo, ya que el algoritmo consiste en varios ciclos con iteraciones definidas (\verb!for!) y convertir estos en un \verb!Stream! de \verb!Java! resulta casi trivial.
+
+Como se mencionó el caso anterior, se paralelizó creacióe la matriz de identidad, su unió la original, asíomo la creacióe las escalas y la sustitución reversa de los valores. Sin embargo, contrario a la implementacióe memoria compartida, no es necesario actualizar la matriz una vez que los cáulos de cada parte son completados.
+
+En este caso, resulta importante garantizar que los limites de cada divisióo se empalmen unos con los otros, ya que esto llevaría condiciones de carrera y, por lo mismo, provocaríresultados no deseados ni esperados.
+
+Para esta implementacióe usóa matriz de $1000\times1000$ tanto para la versióoncurrente como para la versióecuencial. Los resultados de esta implementacióe muestran a continuació
+\begin{center}
+
+    Resultados de la ejecucióecuencial:
+    
+    \begin{tabular}{|r|r|}
+    \hline
+    \hline
+    \# Corrida & Tiempo (segundos)  \\
+    \hline
+    \hline
+    1 & 1.74 \\
+    2 & 1.81 \\
+    3 & 1.63 \\
+    4 & 1.63 \\
+    5 & 1.69 \\
+    \hline
+    \end{tabular}
+    
+    Promedio: 1.7 segundos\\
+    \medskip
+    \medskip
+    \medskip
+    Resultados de la ejecucióoncurrente:
+    
+    \begin{tabular}{|r|r|}
+    \hline
+    \hline
+    \# Corrida & Tiempo (segundos)  \\
+    \hline
+    \hline
+    1 & 0.73 \\
+    2 & 0.78 \\
+    3 & 0.69\\
+    4 & 0.77 \\
+    5 & 0.78 \\
+    \hline
+    \end{tabular}
+    
+    Promedio: 0.75 segundos
+    \medskip
+    \medskip
+    \medskip
+    Speedup: 2.33X
+    
+\end{center}
+
+Inmediatamente se puede observar el gran aumento en la velocidad de ejecucióel algoritmo en el caso concurrente. El \emph{speedup} que se obtiene es de $2.33\times$, lo cual implica que el algoritmo concurrente toma un poco menos de la mitad del tiempo en ser ejecutado.
+
+Esta diferencia tan significativa en comparacióon la implementacióe \verb!WebWorkers! se debe en gran parte al sistema de memoria compartida usado por \verb!Java! contra el de paso de mensajes. En este caso, el costo provocado por la creacióe los hilos para la paralelizacióel programa, no resulta tan fuerte como para ser detrimental para el tiempo de ejecucióAdemá al no requerir el envíy copia de la informacióue se usarán cada hilo, se disminuye considerablemente el costo total del programa.
+
+Es claro que la implementacióaralela no tiene una complejidad mucho mayor a la secuencial y el aumento de velocidad es bastante considerable. Esto nos da como conclusióóa que, en este caso, resulta mucho máconveniente el uso de la implementacióaralela.
+
+Para concluir estas pruebas, se realizó implementacióon \verb!Erlang! de forma secuencial y concurrente, en el caso de la forma concurrente se hizo uso del móo de \verb!plists!, el cual ofrece implementaciones de las funciones predefinidas en las listas de \verb!Erlang! de forma concurrente. Esto facilita de forma considerable la implementació
+La principal motivacióara escojer \verb!Erlang!, a pesar de los resultados de la implementacióe \verb!JavaScript!, es la comparacióntre los \verb!lightweight processes! de \verb!Erlang! y la creacióe \verb!WebWorkers! en \verb!JavaScript!. Esto nos permite observar la diferencia en la eficiencia de los procesos de \verb!Erlang! contra la creacióe procesos o hilos diferentes.
+
+A continuacióe presentan los resultados de la implementacióusando una matriz de $150\times150$, principalmente para poderlo comparar de forma efectiva con la implementacióe \verb!JavaScript!:
+
+\begin{center}
+
+    Resultados de la ejecucióecuencial:
+    
+    \begin{tabular}{|r|r|}
+    \hline
+    \hline
+    \# Corrida & Tiempo (segundos)  \\
+    \hline
+    \hline
+    1 & 0.454 \\
+    2 & 0.531 \\
+    3 & 0.516 \\
+    4 & 0.453 \\
+    5 & 0.500 \\
+    \hline
+    \end{tabular}
+    
+    Promedio: 0.49 segundos\\
+    \medskip
+    \medskip
+    \medskip
+    Resultados de la ejecucióoncurrente:
+    
+    \begin{tabular}{|r|r|}
+    \hline
+    \hline
+    \# Corrida & Tiempo (segundos)  \\
+    \hline
+    \hline
+    1 & 1.343 \\
+    2 & 1.125 \\
+    3 & 1.281\\
+    4 & 1.203 \\
+    5 & 1.297 \\
+    \hline
+    \end{tabular}
+    
+    Promedio: 1.249 segundos
+    \medskip
+    \medskip
+    \medskip
+    Speedup: 0.39X
+    
+\end{center}
+
+Como se puede observar, la versióecuencial es considerablemente máeficiente que la concurrente. De hecho en este caso se ve que la versióoncurrente es considerablemente málenta. Esto deja claro que no es conveniente realizar el algoritmo en un sistema que funciona por paso de mensajes.
+
+Sin embargo, se puede observar que, a pesar de que el \emph{speedup} es considerablemente menor que el de cualquiera de las otras implementaciones, ambas versiones son márádas que sus equivalentes en \verb!JavaScript!. Esto nos permite determinar tambiéque \verb!Erlang! realmente resulta máeficiente que otras implementaciones que funcionan por paso de mensajes. Esto tambiéresulta de importancia, porque nos permite ver que la máina virtual es realmente muy eficiente en su funcionamiento.
+
+
+\section{Conclusiones}
+
+Al llevar a cabo la implementacióe este algoritmo, tanto de forma secuencial como concurrente, pude observar las ventajas práicas de los sistemas de memoria compartida en comparacióon los de paso de mensajes. Tambiépude observar la gran influencia que puede llegar a tener la ley de Amdahl~\cite{amdahl} sobre un sistema con partes concurrentes.
+
+Primero que nada, es claro que, en el caso particular de este algoritmo, las ventajas de los sistemas de memoria compartida son significativas, ya que evitan el tener que reinsertar los registros despuéde ser modificados. A pesar de la posibilidad de condiciones de carrera, realmente no es un problema tan grande en este algoritmo, ya que si se dividen adecuadamente las partes sobre las que se va a procesar, no deberíhaber ningúoblema.
+
+Considero, tambié que la implementacióaralela de este algoritmo, en el caso de \verb!Java! y \verb!Erlang!, resulta muy sencilla de implementar ya que se tiene la versióecuencial, en particular por lo fál que es expresarlos con un ciclo sencillo o con una funcióecursiva. Cualquiera de estas dos estructuras son fáles de representar en forma paralela en ciertos lenguajes.
+
+De la misma forma, resulta claro que implementar concurrencia con \verb!JavaScript! para este tipo de algoritmos, tiene una complejidad superior, ya que cada uno de los \verb!WebWorkers! requiere recibir mucha informació regresar mucha informacióAdemá esta informacióe debe volver a agregar a la matriz original.
+
+Este ultimo punto podríresultar un problema en \verb!Erlang! de la misma manera, ya que son sistemas que funcionan por memoria compartida. Sin embargo, se facilita mucho por la naturaleza funcional pura del lenguaje, lo cual hace que realizar operaciones en listas y, por extensiómatrices, resulte mánatural y directo.
+
+Un aspecto importante a destacar en este caso, es que pese a la gran ventaja que tiene en este caso el uso de un sistema de memoria compartida, no es el caso para todos los algoritmos con implementaciones paralelas. Me parece que en el caso de la inversióe matrices la gran ventaja se debe a las actualizaciones que deben ser realizadas sobre la matriz original.
+
+Creo que uno de los aspectos máimportantes que puedo rescatar de realizar este artílo y la implementacióel algoritmo es que, como en cualquier otro paradigma de programacióexisten múles herramientas, cada una con respectivas ventajas y desventajas y resulta importante reconocer las situaciones en las que unas pueden resultar superiores a otras, ya sea en téinos de rendimiento o de implementació
+Tambiéopino que la decisióe eficiencia contra facilidad de implementaciós muy dependiente de un proyecto a otro, aunque en general me parece que son pocas las situaciones en las que se pueda requerir un aumento lo suficientemente significativo en la eficiencia de un programa para que pueda considerarse como el factor principal. Sin embargo, séue existen muchos sistemas sistemas, particularmente sistemas en los cuales llegan a depender vidas humanas, que requieren ser tan ómos como sea posible.
+
+Finalmente, puedo afirmar que resulta vital entender y saber realizar implementaciones de algoritmos en paralelo, ya que es un hecho que el aumento de velocidad es significativo y es, por las nuevas tendencias de los procesadores, la ú forma de aprovechar los nuevos recursos que se ponen a nuestro alcance como desarrolladores de software. Creo que seríexcelente incorporar el curso de programacióultinú al programa de estudios báco.
+
+\section{Agradecimientos}
+
+Agradecimiento especial a Gerardo Galíez por el apoyo en la implementacióel algoritmo con Erlang, principalmente en cuanto a la parte conceptual y alternativas para la implementacióensada.
+
+Agradezco de igual forma al equipo completo de ShareLaTeX~\cite{sharelatex}, por su herramienta en lía para realizar este artílo con facilidad y al sitio de la universidad de Carnegie Mellon~\cite{implementacion} por el ejemplo de implementacióe inversióe matrices en un lenguaje funcional.
+
+Mencióspecial a los sitios de Wikibooks \LaTeX \endnote{ https://en.wikibooks.org/wiki/LaTeX/Mathematics}, Texblog \endnote{ http://texblog.org/2014/06/24/big-o-and-related-notations-in-latex/} y Stack Exchange \endnote{ http://tex.stackexchange.com/questions/40280/how-can-i-visualize-matrix-operations Accedido el 5 de noviembre del 2015} por la documentacióara el uso correcto de \LaTeX y mejor redaccióel presente artílo. 
+
+Finalmente, agradecimientos a Saú Nova Caballero y a Eduardo Rodriguez Ruiz por la atenciól exponer mis ideas para aclarar la implementacióel algoritmo de inversióe matrices.
+
+ \theendnotes
+ 
+\begin{thebibliography}{9}
+    
+\bibitem{algoritmo}  
+    Indian Statistical Institute.
+    \emph{Matrix algorithms (part 1).} \\
+    http://www.isical.ac.in/~arnabc/matalgop1.pdf Accedido el 5 de noviembre del 2015.
+    
+\bibitem{amdahl}
+    ACM Digital Library
+    \emph{Improvements in multiprocessor system design.} \\
+    http://doi.acm.org/10.1145/327070.327215 Accedido el 5 de noviembre del 2015
+    
+\bibitem{sharelatex}
+    ShareLaTeX.
+    \emph{About Us} \\
+    https://www.sharelatex.com/about Accedido el 5 de noviembre del 2015.
+    
+\bibitem{implementacion}
+    Carnegie Mellon University
+    \emph{Matrix Inverse} \\
+    http://www.cs.cmu.edu/\textasciitilde scandal/nesl/alg-numerical.html\#inverse Accedido el 5 de noviembre del 2015.
+    
+    
+\end{thebibliography}
+
+\section{Apéices}
+
+Cóo \verb!HTML! para mostrar los resultados de la implementacióe \verb!JavaScript!:
+\begin{verbatim}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Inversion Matrices</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="inverse.js"></script>
+    <script src="setup_worker.js" type="javascript/worker"></script>
+    <script src="pivot_worker.js" type="javascript/worker"></script>
+  </head>
+
+  <body>
+    <h1>Inversion de Matrices</h1>
+    <p> Tiempo Concurrente: <span id="parallel">?</span></p>
+    <p> Tiempo Sequencial: <span id="sequential">?</span></p>
+  </body>
+</html>
+\end{verbatim}
+
+Cóo de \verb!JavaScript! para coordinar a los \verb!WebWorkers! y para realizar los cáulos de la inversióe matrices:
+\begin{verbatim}
+'use strict';
+
+var MAXN = 150;
+var numWorkers = 4;
+var startTime;
+
+var original = [];
+original.length = MAXN;
+
+var padWorkers = [];
+padWorkers.length = numWorkers;
+
+var gaussWorkers = [];
+gaussWorkers.length = numWorkers;
+
+function gaussJordan(A, i) {
+  if (i === A.length) {
+    var endTime = performance.now();
+    if (numWorkers > 1) {
+      $("#parallel").html((endTime - startTime) / 1000);
+
+      numWorkers = 1;
+      padMatrix(original);
+    } else {
+      $("#sequential").html((endTime - startTime) / 1000);
+    }
+    return;
+  }
+
+  var irow = A.shift();
+  var val = irow[i];
+
+  var workersFinished = 0;
+  var start = 0;
+  var chunkSize = MAXN * 2 / numWorkers;
+  var end;
+
+  for (var j = 0; j < numWorkers; j++) {
+    end = j + 1 === numWorkers ? MAXN - 1 : Math.ceil(start + chunkSize);
+    gaussWorkers[j].postMessage({start: start, end: end, irow: irow, val: val});
+    start = end;
+
+    gaussWorkers[j].onmessage = function (event) {
+      workersFinished++;
+      for (var k = event.data.start; k < event.data.end; k++) {
+        irow[k] = event.data.irow[k];
+      }
+
+      if (workersFinished === numWorkers) {
+        workersFinished = 0;
+        start = 0;
+        chunkSize = (MAXN - 1) / numWorkers;
+
+        for (var k = 0; k < numWorkers; k++) {
+          end = k + 1 === numWorkers ? MAXN - 1 : Math.ceil(start + chunkSize);
+          gaussWorkers[k].postMessage({start: start, end: end, irow: irow, i: i, A: A, size: MAXN});
+          start = end;
+
+          gaussWorkers[k].onmessage = function (event) {
+            workersFinished++;
+            for (var l = event.data.start; l < event.data.end; l++) {
+              A[l] = event.data.jrow[l];
+            }
+            if (workersFinished === numWorkers) {
+              A.push(irow);
+              gaussJordan(A, i + 1);
+            }
+          };
+        }
+      }
+    }
+  };
+}
+
+function padMatrix(matrix) {
+  startTime = performance.now();
+  var workersFinished = 0;
+  var start = 0;
+  var chunkSize = MAXN / numWorkers;
+  var end;
+
+  for (var i = 0; i < numWorkers; i++) {
+    end = i + 1 === numWorkers ? MAXN - 1 : Math.ceil(start + chunkSize);
+    padWorkers[i].postMessage({start: start, end: end, matrix: matrix, size: MAXN});
+    start = end;
+
+    padWorkers[i].onmessage = function (event) {
+      workersFinished++;
+      for (var j = event.data.start; j < event.data.end; j++) {
+        matrix[j] = event.data.padded[j];
+      }
+      if (workersFinished === numWorkers) {
+        gaussJordan(matrix, 0);
+      }
+    };
+  }
+}
+
+function printMatrix(matrix) {
+  var res = "";
+  for (var i = 0; i < MAXN; i++) {
+    for (var j = MAXN; j < MAXN * 2; j++) {
+      res += matrix[i][j] + ", ";
+    }
+    res += "\n";
+  }
+  console.log(res);
+}
+
+$(function () {
+  var randomNum;
+  for (var i = 0; i < MAXN; i++) {
+    original[i] = [];
+    original[i].length = MAXN;
+    for (var j = 0; j < MAXN; j++) {
+      randomNum = 1.0 + (Math.random() * MAXN);
+      original[i][j] = randomNum;
+    }
+  }
+
+  for (var i = 0; i < numWorkers; i++) {
+    padWorkers[i] = new Worker('pad_worker.js');
+    gaussWorkers[i] = new Worker('gauss_worker.js');
+  }
+
+  padMatrix(original.slice());
+});
+\end{verbatim}
+
+\verb!WebWorker! de \verb!JavaScript! para crear la matriz de identidad del tamañeseado y agregarla a la matriz base:
+\begin{verbatim}
+onmessage = function(event) {
+  var start = event.data.start;
+  var end = event.data.end;
+  var matrix = event.data.matrix;
+  var size = event.data.size;
+
+  for (var i = start; i < end; i++) {
+    matrix[i].length = size * 2;
+    for (var j = size; j < size * 2; j++) {
+      matrix[i][j] = 0;
+      if (size + i === j) {
+        matrix[i][j] = 1;
+      }
+    }
+  }
+
+  postMessage({start: start, end: end, padded: matrix});
+}
+\end{verbatim}
+
+\verb!WebWorker! de \verb!JavaScript! para escalar una fila de la matriz o para hacer la sustitucióacia atráde los valores encontrados:
+\begin{verbatim}
+onmessage = function(event) {
+  var start = event.data.start;
+  var end = event.data.end;
+  var irow = event.data.irow;
+  var val = event.data.val;
+  var A = event.data.A;
+
+  if (!A) {
+    for (var i = start; i < end; i++) {
+      irow[i] /= val;
+    }
+
+    postMessage({start: start, end: end, irow: irow});
+  } else {
+    var i = event.data.i;
+    var size = event.data.size;
+    for (var j = start; j < end; j++) {
+      var jrow = A[j];
+      var scale = jrow[i];
+      for (var k = 0; k < size * 2; k++) {
+        jrow[k] -= (irow[k] * scale * 1.0);
+      }
+    }
+    postMessage({start: start, end: end, jrow: A});
+  }
+}
+\end{verbatim}
+
+Cóo para la implementacióe la inversióe matrices en \verb!Java! usando \verb!Streams!:
+\begin{verbatim}
+import java.util.Arrays;
+import java.util.stream.*;
+
+public class Inverse {
+    public static int MAXN = 1000;
+
+    // Sequential code
+    public static double[][] invert(double matrix[][]) {
+        for (int i = 0; i < MAXN; i++) {
+            matrix[i][MAXN + i] = 1;
+        }
+
+        return gaussJordan(matrix);
+    }
+
+    public static double[][] gaussJordan(double matrix[][]) {
+        int i, j, k;
+        double val, scale;
+        double[] irow, jrow;
+
+        for (i = 0; i < MAXN; i++) {
+            irow = Arrays.copyOf(matrix[0], MAXN * 2);
+            val = irow[i];
+            for (j = 0; j < MAXN * 2; j++) {
+                irow[j] /= val;
+            }
+
+            for (j = 1; j < MAXN; j++) {
+                jrow = matrix[j];
+                scale = matrix[j][i];
+                for (k = 0; k < MAXN * 2; k++) {
+                    jrow[k] -= (irow[k] * scale);
+                }
+            }
+            for (j = 0; j < MAXN - 1; j++) {
+                matrix[j] = matrix[j + 1];
+            }
+            matrix[MAXN - 1] = Arrays.copyOf(irow, MAXN * 2);
+        }
+        return matrix;
+    }
+
+    // Parallel code
+    public static double[][] parallelInvert(double matrix[][]) {
+        IntStream
+            .range(0, MAXN)
+            .parallel()
+            .forEach(i -> {
+                matrix[i][MAXN + i] = 1;
+            });
+
+        parallelGaussJordan(matrix);
+
+        return matrix;
+    }
+
+    public static double[][] parallelGaussJordan(double matrix[][]) {
+        IntStream.range(0, MAXN).forEach(i -> {
+            double[] irow = Arrays.copyOf(matrix[0], MAXN * 2);
+            double val = irow[i];
+
+            IntStream.range(0, MAXN * 2).parallel().forEach(j -> {
+                irow[j] /= val;
+            });
+
+            IntStream.range(1, MAXN).parallel().forEach(j -> {
+                double[] jrow = matrix[j];
+                double scale = matrix[j][i];
+                for (int k = 0; k < MAXN * 2; k++) {
+                    jrow[k] -= (irow[k] * scale);
+                }
+            });
+
+            IntStream.range(0, MAXN - 1).forEach(j -> {
+                matrix[j] = matrix[j + 1];
+            });
+
+            matrix[MAXN - 1] = Arrays.copyOf(irow, MAXN * 2);
+        });
+        return matrix;
+    }
+
+    public static void printMatrix(double[][] matrix) {
+        for (int i = 0; i < MAXN; i++) {
+            for (int j = MAXN; j < MAXN * 2; j++) {
+                System.out.print(matrix[i][j] + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public static void benchmark(String title, double[][] matrix, boolean sequential) {
+        System.out.println(title);
+
+        long start = System.currentTimeMillis();
+        if (sequential) {
+            invert(matrix);
+        } else {
+            parallelInvert(matrix);
+        }
+        long end = System.currentTimeMillis();
+        double time = (end - start) / 1000.0;
+
+        System.out.printf("Time: %.2f%n", time);
+    }
+
+    public static void main(String... args) {
+        double randomNum;
+        double[][] sequential = new double[MAXN][MAXN * 2];
+        double[][] parallel = new double[MAXN][MAXN * 2];
+        for (int i = 0; i < MAXN; i++) {
+            for (int j = 0; j < MAXN; j++) {
+                randomNum = 1.0 + (Math.random() * MAXN);
+                sequential[i][j] = randomNum;
+                parallel[i][j] = randomNum;
+            }
+        }
+
+        benchmark("Sequential", sequential, true);
+        benchmark("Concurrent", parallel, false);
+    }
+}
+\end{verbatim}
+
+Cóo para la implementacióe la inversióe matrices en \verb!Erlang!:
+\begin{verbatim}
+-module(inverse).
+-compile(export_all).
+
+%start Sequential Implementation
+
+%start Sequential padding
+
+sequential_row(1) -> [0];
+sequential_row(I) -> [0 | sequential_row(I - 1)].
+
+sequential_identity(S, S) -> [];
+sequential_identity(S, R) -> 
+    {A, B} = lists:split(R, sequential_row(S - 1)),
+    I = [A ++ [1] ++ B],
+    I ++ sequential_identity(S, R + 1).
+
+sequential_pad(A) ->
+    I = sequential_identity(length(A), 0),
+    sequential_pad(A, I, length(A)).
+
+sequential_pad(_, _, 0) -> [];
+sequential_pad(A, I, R) ->
+    Row = [lists:nth(R, A) ++ lists:nth(R, I)],
+    sequential_pad(A, I, R - 1) ++ Row.
+
+%end Sequential padding
+
+%start Sequential GaussJordan
+
+sequential_scale([], _, _) -> [];
+
+sequential_scale([V | J], [X | I], S) ->
+    R = V - (S * X),
+    [R] ++ sequential_scale(J, I, S).
+
+sequential_drop_identity(A) ->
+    N = length(A),
+    lists:map(fun(R) ->
+                      {_, X} = lists:split(N, R),
+                      X
+              end, A).
+
+sequential_gauss_jordan(A, I) ->
+    case (I > length(A)) of
+        true -> sequential_drop_identity(A);
+        _ ->
+            [Ir | T] = A,
+            V = lists:nth(I, Ir),
+            Irow = lists:map(fun(X) -> X / V end, Ir),
+            Ap = lists:map(fun(Jrow) -> sequential_scale(Jrow, Irow, lists:nth(I, Jrow)) end, T),
+            sequential_gauss_jordan(Ap ++ [Irow], I + 1)
+    end.
+
+%end Sequential GaussJordan
+
+sequential_inverse(A) ->
+    Ap = sequential_pad(A),
+    sequential_gauss_jordan(Ap, 1).
+
+%end Sequential Implementation 
+
+%start Concurrent Implementation
+
+spawn_processes(0, _Function, _Args, _Message, _ParentId) -> ok;
+spawn_processes(N, Function, Args, Message, ParentId) ->
+    Pid = spawn(inverse, Function, Args),
+    Pid ! {Message, ParentId},
+    spawn_processes(N - 1, Function, Args, Message, ParentId).
+
+%start Concurrent Padding
+
+concurrent_row(1) -> [0];
+concurrent_row(I) -> 
+    R = [0 | sequential_row(I - 1)],
+    receive
+        {compute, Pid} -> Pid ! {result, R}
+    end.
+
+concurrent_identity(S, R) -> 
+    spawn(inverse, spawn_processes, [S, concurrent_row, [S - 1], compute, self()]),
+    concurrent_identity(S, R, spawned).
+
+concurrent_identity(S, S, spawned) -> [];
+concurrent_identity(S, R, spawned) ->
+    receive
+        {result, Row} ->
+            {A, B} = lists:split(R, Row),
+            I = [A ++ [1] ++ B],
+            I ++ concurrent_identity(S, R + 1, spawned)
+    end.
+
+concurrent_pad(A) ->
+    I = concurrent_identity(length(A), 0),
+    sequential_pad(A, I, length(A)).
+
+%end Concurrent Padding
+
+%start Concurrent GaussJordan
+
+concurrent_drop_identity(A) ->
+    N = length(A),
+    plists:map(fun(R) ->
+                       {_, X} = lists:split(N, R),
+                       X
+               end, A).
+
+concurrent_gauss_jordan(A, I) ->
+    case (I > length(A)) of
+        true -> concurrent_drop_identity(A);
+        _ ->
+            [Ir | T] = A,
+            V = lists:nth(I, Ir),
+            Irow = plists:map(fun(X) -> X / V end, Ir),
+            Ap = plists:map(fun(Jrow) -> sequential_scale(Jrow, Irow, lists:nth(I, Jrow)) end, T),
+            concurrent_gauss_jordan(Ap ++ [Irow], I + 1)
+    end.
+
+%end Concurrent GaussJordan
+
+concurrent_inverse(A) ->
+    Ap = concurrent_pad(A),
+    concurrent_gauss_jordan(Ap, 1).
+
+%end Concurrent Implementation
+
+%start Benchmarks
+
+generate_row(0, _) -> [];
+generate_row(N, MAXN) -> [random:uniform(MAXN) | generate_row(N - 1, MAXN)].
+
+generate_matrix(0, _) -> [];
+generate_matrix(N, MAXN) -> [generate_row(MAXN, MAXN) | generate_matrix(N - 1, MAXN)].
+
+benchmark(MAXN) ->
+    Mat = generate_matrix(MAXN, MAXN), 
+    %[[1.0, 1.0, 2.0, 1.0], [1.0, 2.0, 1.0, 2.0], [1.0, 1.0, 1.0, 3.0], [2.0, 3.0, 1.0, 3.0]],
+    T1 = erlang:system_time(milli_seconds),
+    sequential_inverse(Mat),
+    T2 = erlang:system_time(milli_seconds),
+    TS = (T2 - T1) / 1000,
+    T3 = erlang:system_time(milli_seconds),
+    concurrent_inverse(Mat),
+    T4 = erlang:system_time(milli_seconds),
+    TC = (T4 - T3) / 1000,
+    io:format("Sequential time: ~w~n", [TS]),
+    io:format("Concurrent time: ~w~n", [TC]),
+    io:format("Speedup: ~w~n", [TS/TC]).
+
+%end Benchmarks
+\end{verbatim}
+
+\end{document}

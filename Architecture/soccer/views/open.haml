@@ -1,0 +1,28 @@
+#polls
+  %h3 Create new poll
+  -unless locals[:match_amount]
+    %form{class: "form-control", action: "/open", method: "post"}
+      %label{for: 'match_amount'}
+        Select the number of matches in the new poll
+      %input{type: 'number', min: '1', name: 'match_amount', value: '1'}
+      %br
+      %br
+      %input{class: "btn btn-success", type: "submit", value: "Go"}
+  -else
+    %form{action: "/done", method: "post"}
+      %table
+        -locals[:match_amount].to_i.times do |i|
+          %tr
+            %td="Match #{i + 1}&nbsp;&nbsp;&nbsp;"
+            %td
+              Team A:&nbsp;
+              %input{type: 'text', name: "a_#{i}"}
+            %td
+              &nbsp;&nbsp;Team B:&nbsp;
+              %input{type: 'text', name: "b_#{i}"}
+      %br
+      %br
+      %span
+        %a{class: "btn btn-danger"}(href='/open')
+          Reset
+      %input{class: "btn btn-success", type: "submit", value: "Create"}

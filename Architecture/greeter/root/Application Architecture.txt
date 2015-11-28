@@ -1,0 +1,43 @@
+= Application Architecture
+
+We explain here how to write the documentation for your final project. As an example, we provide a simple _Greeter_ web application which is just a glorified version of the classical <em>Hello World</em> program but running on the web and producing results in different natural languages.
+
+The directory structure for the application and its documentation is as follows:
+
+   greeter/
+         ├─ doc/                    (produced by RDoc)
+         ├─ public/                 (folder for the server's public documents)
+                 └─ stylesheets/    (CSS files)
+         ├─ models/                 (the application's model files)
+         └─ views/                  (the application's view files)         
+
+This is the command used to produce this documentation (running it from the +greeter+ directory):
+
+  rdoc --main "root/Application Architecture.txt" --exclude ".json|.css" root
+
+== Class Diagrams
+
+The following figure represents the class diagram for the models used in the _Greeter_ web application:
+
+link:doc/images/class_diagram.png
+
+You can include as many of these diagrams as you consider necessary. Note that you only need to specify the names of the classes and their relationships. You don't need to include attributes or method names in these diagrams.
+
+To include an image in this document, copy it in the +doc/images+ directory and refer it as: +link:doc/images/image_name.png+.
+
+== Deployment Diagram
+
+Deployment diagrams show a system's physical layout, revealing which pieces of software run on what pieces of hardware. This is the deployment diagram for our application.
+
+link:doc/images/deployment_diagram.png
+
+== Patterns Used
+
+Briefly mention all the patterns that your application uses and identify where exactly. In our example, the following pattern are clearly used:
+
+- <b>Simple Factory Pattern</b>: The +GreeterFactory+ is used to create +Greeter+ instances by specifying the desired language during its creation.
+- <b>Model-View-Controller</b>: The application follows the classical web implementation of the MVC architectural pattern. The models (+.rb+ files) and views (+.erb+ files) are stored in the corresponding +models+ and +views+ directory. The controller is contained in +server.rb+ file.
+
+== Bibliography
+
+Mention here any consulted books or web pages.
